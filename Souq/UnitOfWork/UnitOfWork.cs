@@ -13,14 +13,16 @@ namespace Souq.UnitOfWork
         public ICartRepository Cart { get; }
 
         public IVendorRepository Vendors { get; }
+        public IDepartmentRepository Departments { get; }
 
-        public UnitOfWork(AppDbContext context, IProductRepository products, IOrderRepository orders, ICartRepository cart, IVendorRepository vendors)
+        public UnitOfWork(AppDbContext context, IProductRepository products, IOrderRepository orders, ICartRepository cart, IVendorRepository vendors, IDepartmentRepository departments)
         {
             _context = context;
             Products = products;
             Orders = orders;
             Cart = cart;
             Vendors = vendors;
+            Departments = departments;
         }
 
         public void Dispose() => _context.Dispose();

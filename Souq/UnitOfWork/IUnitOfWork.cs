@@ -9,6 +9,7 @@ namespace Souq.UnitOfWork
         IOrderRepository Orders { get; }
         ICartRepository Cart { get; }
         IVendorRepository Vendors { get; }
+        IDepartmentRepository Departments { get; }
         Task<int> SaveAsync();
     }
 }

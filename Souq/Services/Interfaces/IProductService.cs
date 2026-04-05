@@ -1,0 +1,10 @@
+﻿using Souq.Models;
+
+namespace Souq.Services.Interfaces
+{
+    public interface IProductService
+    {
+        Task<List<Product>> GetFeaturedProductsAsync(int count=8);
+        Task<List<Department>> GetAllDepartmentsAsync();
+    }
+}

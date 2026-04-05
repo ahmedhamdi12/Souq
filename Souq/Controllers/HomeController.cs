@@ -1,21 +1,30 @@
 using System.Diagnostics;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Souq.Models;
+using Souq.Services.Interfaces;
+using Souq.ViewModels.Home;
 
 namespace Souq.Controllers
 {
     public class HomeController : Controller
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly IProductService _productService;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(IProductService productService)
         {
-            _logger = logger;
+            _productService = productService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            var model = new HomeViewModel
+            {
+                FeaturedProducts = await _productService.GetFeaturedProductsAsync(8),
+                Departments = await _productService.GetAllDepartmentsAsync(),
+                
+            };
+            return View(model);
         }
 
         public IActionResult Privacy()

@@ -1,8 +1,352 @@
-﻿@{
+﻿@model Souq.ViewModels.Home.HomeViewModel
+@{
     ViewData["Title"] = "Home Page";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+<!-- ════════════════════════════════════════════════
+     HERO SECTION
+     The first thing visitors see.
+     Goal: communicate value + push to action.
+════════════════════════════════════════════════ -->
+<section class="relative bg-gradient-to-br from-primary-600 via-primary-700
+                to-primary-900 overflow-hidden">
+
+    <!-- Background decorative circles — pure CSS, no images needed -->
+    <div class="absolute top-0 right-0 w-96 h-96 bg-white opacity-5
+                rounded-full -translate-y-48 translate-x-48"></div>
+    <div class="absolute bottom-0 left-0 w-64 h-64 bg-white opacity-5
+                rounded-full translate-y-32 -translate-x-32"></div>
+
+    <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24 lg:py-32">
+        <div class="max-w-2xl">
+
+            <!-- Badge -->
+            <div class="inline-flex items-center gap-2 bg-white bg-opacity-10
+                        text-white text-sm font-medium px-4 py-1.5 rounded-full
+                        mb-6 border border-white border-opacity-20">
+                <span class="w-2 h-2 bg-accent-400 rounded-full"></span>
+                Trusted by 10,000+ shoppers
+            </div>
+
+            <!-- Headline -->
+            <h1 class="text-4xl lg:text-6xl font-bold text-white leading-tight mb-6">
+                Everything you need,
+                <span class="text-accent-400">one place.</span>
+            </h1>
+
+            <!-- Subheadline -->
+            <p class="text-lg text-primary-100 mb-8 leading-relaxed">
+                Shop from hundreds of independent vendors.
+                Find unique products, great prices, and fast delivery —
+                all in one marketplace built for you.
+            </p>
+
+            <!-- CTA Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4">
+                <a href="/products"
+                   class="inline-flex items-center justify-center gap-2
+                          bg-white text-primary-700 font-semibold px-8 py-3.5
+                          rounded-xl hover:bg-primary-50 transition-all
+                          shadow-lg hover:-translate-y-0.5">
+                    Start shopping
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                    </svg>
+                </a>
+                <a href="/vendor/apply"
+                   class="inline-flex items-center justify-center gap-2
+                          bg-transparent text-white font-semibold px-8 py-3.5
+                          rounded-xl border border-white border-opacity-30
+                          hover:bg-white hover:bg-opacity-10 transition-all">
+                    Sell with us
+                </a>
+            </div>
+
+            <!-- Stats row -->
+            <div class="flex flex-wrap gap-8 mt-12 pt-8
+                        border-t border-white border-opacity-10">
+                <div>
+                    <p class="text-2xl font-bold text-white">500+</p>
+                    <p class="text-sm text-primary-200">Active vendors</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">12,000+</p>
+                    <p class="text-sm text-primary-200">Products</p>
+                </div>
+                <div>
+                    <p class="text-2xl font-bold text-white">98%</p>
+                    <p class="text-sm text-primary-200">Happy customers</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ════════════════════════════════════════════════
+     DEPARTMENTS BAR
+     Quick navigation to main categories.
+     Only shows if we have departments in the DB.
+════════════════════════════════════════════════ -->
+@if (Model.Departments.Any())
+{
+    <section class="bg-white border-b border-gray-100 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center gap-1 overflow-x-auto py-4
+                            scrollbar-hide">
+                
+                <a href="/products"
+                   class="flex-shrink-0 px-5 py-2 text-sm font-medium
+                              text-white bg-primary-600 rounded-full
+                              hover:bg-primary-700 transition-colors">
+                    All
+                </a>
+
+                @foreach (var dept in Model.Departments)
+                {
+                    <a href="/products/department/@dept.Slug"
+                       class="flex-shrink-0 px-5 py-2 text-sm font-medium
+                                      text-gray-600 hover:text-primary-600
+                                      hover:bg-primary-50 rounded-full transition-colors
+                                      whitespace-nowrap">
+                        @dept.Name
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
+}
+<!-- ════════════════════════════════════════════════
+     FEATURED PRODUCTS
+     Shows approved products from the DB.
+     Falls back to empty state if no products yet.
+════════════════════════════════════════════════ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+
+    <!-- Section header -->
+    <div class="flex items-center justify-between mb-8">
+        <div>
+            <h2 class="text-2xl font-bold text-gray-900">Featured products</h2>
+            <p class="text-gray-500 mt-1 text-sm">
+                Handpicked from our best vendors
+            </p>
+        </div>
+        <a href="/products"
+           class="text-sm font-medium text-primary-600 hover:text-primary-700
+                  flex items-center gap-1 hover:gap-2 transition-all">
+            View all
+            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" d="M9 5l7 7-7 7" />
+            </svg>
+        </a>
+    </div>
+
+    @if (Model.FeaturedProducts.Any())
+{
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        @foreach (var product in Model.FeaturedProducts)
+        {
+            
+                var mainImage = product.Images
+                    .FirstOrDefault(i => i.IsMain)?.ImageUrl
+                    ?? product.Images.FirstOrDefault()?.ImageUrl;
+
+                var displayPrice = product.HasVariations && product.Variations.Any()
+                    ? product.Variations.Min(v => v.Price)
+                    : product.BasePrice;
+
+                var priceLabel = product.HasVariations && product.Variations.Any()
+                    ? "From" : "";
+            
+
+            <!--
+                The entire card is a div now — not an <a>.
+                Only the image and title are wrapped in <a>.
+                The button stays outside the <a> to avoid nesting.
+            -->
+            <div class="group bg-white rounded-2xl border border-gray-100
+                        shadow-sm hover:shadow-lg transition-all duration-300
+                        overflow-hidden hover:-translate-y-1 flex flex-col">
+
+                <!-- Clickable area — image + title -->
+                <a href="/products/@product.Slug" class="block flex-1">
+
+                    <!-- Image -->
+                    <div class="relative aspect-square bg-gray-50 overflow-hidden">
+                        @if (mainImage != null)
+                        {
+                            <img src="@mainImage"
+                                 alt="@product.Name"
+                                 class="w-full h-full object-cover
+                                        group-hover:scale-105 transition-transform
+                                        duration-500"/>
+                        }
+                        else
+                        {
+                            <div class="w-full h-full flex items-center
+                                        justify-center bg-gray-100">
+                                <svg class="w-12 h-12 text-gray-300" fill="none"
+                                     stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round"
+                                          stroke-width="1"
+                                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                        }
+
+                        <!-- Vendor badge -->
+                        <div class="absolute bottom-2 left-2">
+                            <span class="text-xs bg-white bg-opacity-90 text-gray-700
+                                         font-medium px-2 py-1 rounded-lg shadow-sm">
+                                @product.Vendor.StoreName
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Title -->
+                    <div class="px-4 pt-4 pb-2">
+                        <h3 class="font-medium text-gray-900 text-sm line-clamp-2
+                                   group-hover:text-primary-600 transition-colors">
+                            @product.Name
+                        </h3>
+                    </div>
+
+                </a>
+
+                <!-- Price + button row — OUTSIDE the <a> -->
+                <div class="px-4 pb-4 flex items-center justify-between">
+
+                    <!-- Price -->
+                    <p class="text-base font-bold text-gray-900">
+                        @if (!string.IsNullOrEmpty(priceLabel))
+                        {
+                            <span class="text-xs font-normal text-gray-500 mr-0.5">
+                                @priceLabel
+                            </span>
+                        }
+                        $@displayPrice.ToString("0.00")
+                    </p>
+
+                    <!-- Add to cart button -->
+                    <button onclick="addToCart(@product.Id)"
+                            class="w-8 h-8 flex items-center justify-center
+                                   bg-primary-600 text-white rounded-lg
+                                   hover:bg-primary-700 transition-colors
+                                   shadow-sm hover:shadow-md">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                    </button>
+                </div>
+
+            </div>
+        }
+    </div>
+}
+</section>
+
+<!-- ════════════════════════════════════════════════
+     WHY US SECTION — builds trust
+════════════════════════════════════════════════ -->
+<section class="bg-white py-16 border-t border-gray-100">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <div class="text-center mb-12">
+            <h2 class="text-2xl font-bold text-gray-900">Why shop with us?</h2>
+            <p class="text-gray-500 mt-2 text-sm">
+                Everything we do is built around your experience
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+            @foreach (var feature in new[]
+                        {
+                        new {
+                        Icon = "M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z",
+                        Title = "Secure payments",
+                        Desc  = "Every transaction is protected by Stripe. Your payment info is never stored on our servers.",
+                        Color = "bg-green-50 text-green-600"
+                        },
+                        new {
+                        Icon = "M13 10V3L4 14h7v7l9-11h-7z",
+                        Title = "Fast delivery",
+                        Desc  = "Vendors ship directly to you. Track your order in real-time from purchase to door.",
+                        Color = "bg-blue-50 text-blue-600"
+                        },
+                        new {
+                        Icon = "M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z",
+                        Title = "Support local",
+                        Desc  = "Every purchase supports an independent vendor. Real people, real businesses.",
+                        Color = "bg-pink-50 text-pink-600"
+                        }
+                        })
+            {
+                <div class="text-center p-6">
+                    <div class="w-14 h-14 @feature.Color rounded-2xl flex
+                                    items-center justify-center mx-auto mb-4">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="1.5" d="@feature.Icon" />
+                        </svg>
+                    </div>
+                    <h3 class="font-semibold text-gray-900 mb-2">
+                        @feature.Title
+                    </h3>
+                    <p class="text-sm text-gray-500 leading-relaxed">
+                        @feature.Desc
+                    </p>
+                </div>
+            }
+        </div>
+    </div>
+</section>
+<!-- ════════════════════════════════════════════════
+     VENDOR CTA — recruit vendors
+════════════════════════════════════════════════ -->
+<section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    <div class="bg-gradient-to-r from-primary-600 to-primary-800 rounded-3xl
+                p-10 lg:p-16 flex flex-col lg:flex-row items-center
+                justify-between gap-8">
+        <div class="text-center lg:text-left">
+            <h2 class="text-2xl lg:text-3xl font-bold text-white mb-3">
+                Have something to sell?
+            </h2>
+            <p class="text-primary-100 text-sm lg:text-base max-w-md">
+                Join hundreds of vendors already growing their business on Souq.
+                Set up your store in minutes, reach thousands of customers.
+            </p>
+        </div>
+        <a href="/vendor/apply"
+           class="flex-shrink-0 inline-flex items-center gap-2 bg-white
+                  text-primary-700 font-semibold px-8 py-3.5 rounded-xl
+                  hover:bg-primary-50 transition-all shadow-lg
+                  hover:-translate-y-0.5 whitespace-nowrap">
+            Start selling today
+            <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                 viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+            </svg>
+        </a>
+    </div>
+</section>
+@section Scripts {
+    <script>
+        /*
+            Placeholder for addToCart function.
+            We'll implement this fully in the Cart phase.
+            For now it just logs to console so we can test
+            the button without breaking anything.
+        */
+        function addToCart(productId) {
+            console.log('Add to cart:', productId);
+        }
+    </script>
+}

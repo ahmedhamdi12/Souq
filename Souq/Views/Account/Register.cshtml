@@ -1,0 +1,201 @@
+﻿@model Souq.ViewModels.Auth.RegisterViewModel
+@{
+    Layout = null;
+	ViewData["Title"] = "Create Account";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Souq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50:  '#f0f9ff',
+                            100: '#e0f2fe',
+                            500: '#0ea5e9',
+                            600: '#0284c7',
+                            700: '#0369a1',
+                        }
+                    },
+                    fontFamily: { sans: ['Inter', 'sans-serif'] }
+                }
+            }
+        }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet" />
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-50 via-white to-blue-50
+             flex items-center justify-center p-4 font-sans antialiased">
+    <div class="w-full max-w-md">
+    <!-- ── Logo ── -->
+    <div class="text-center mb-8">
+        <a href="/" class="inline-flex items-center gap-2 justify-center">
+            <div class="w-10 h-10 bg-primary-600 rounded-xl flex items-center
+                        justify-center shadow-lg">
+                <span class="text-white font-bold text-lg">S</span>
+            </div>
+            <span class="text-2xl font-bold text-gray-900">
+                Souq<span class="text-primary-600">.</span>
+            </span>
+        </a>
+        <h1 class="mt-4 text-2xl font-bold text-gray-900">Create your account</h1>
+        <p class="mt-1 text-sm text-gray-500">Join thousands of shoppers today</p>
+    </div>
+    <!-- ── Card ── -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-8">
+
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl">
+                @foreach (var error in ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors))
+                {
+                    <p class="text-sm text-red-600 flex items-center gap-1.5">
+                        <svg class="w-4 h-4 shrink-0" fill="currentColor"
+                             viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                  clip-rule="evenodd" />
+                        </svg>
+                        @error.ErrorMessage
+                    </p>
+                }
+            </div>
+        }
+        <form asp-controller="Account" asp-action="Register"
+              method="post" class="space-y-5">
+			@Html.AntiForgeryToken()
+
+            <!-- ── First + Last name row ── -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="flex flex-column gap-1.5 ">
+                    <label asp-for="FirstName"
+                           class="text-sm font-medium text-gray-700">
+                        First name
+                    </label>
+                    <input asp-for="FirstName"
+                           placeholder="John"
+                           class="px-4 py-2.5 border border-gray-200 rounded-xl
+                                  text-sm focus:outline-none focus:ring-2
+                                  focus:ring-primary-500 focus:border-transparent
+                                  transition-all" />
+                    <span asp-validation-for="FirstName"
+                          class="text-xs text-red-500"></span>
+                </div>
+                <div class="flex flex-col gap-1.5">
+                    <label asp-for="LastName"
+                           class="text-sm font-medium text-gray-700">
+                        Last name
+                    </label>
+                    <input asp-for="LastName"
+                           placeholder="Doe"
+                           class="px-4 py-2.5 border border-gray-200 rounded-xl
+                                  text-sm focus:outline-none focus:ring-2
+                                  focus:ring-primary-500 focus:border-transparent
+                                  transition-all" />
+                    <span asp-validation-for="LastName"
+                          class="text-xs text-red-500"></span>
+                </div>
+            </div>
+            <!-- ── Email ── -->
+            <div class="flex flex-col gap-1.5">
+                <label asp-for="Email"
+                       class="text-sm font-medium text-gray-700">
+                    Email address
+                </label>
+                <div class="relative">
+                    <input asp-for="Email"
+                           placeholder="john@example.com"
+                           class="w-full pl-10 pr-4 py-2.5 border border-gray-200
+                                  rounded-xl text-sm focus:outline-none focus:ring-2
+                                  focus:ring-primary-500 focus:border-transparent
+                                  transition-all" />
+                    <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                    </svg>
+                </div>
+                <span asp-validation-for="Email"
+					  class="text-xs text-red-500"></span>
+            </div>
+            <div class="flex flex-col gap-1.5">
+                <label asp-for="Password"
+                       class="text-sm font-medium text-gray-700">
+                    Password
+                </label>
+                <div class="relative">
+                    <input asp-for="Password"
+                           placeholder="Min. 8 characters"
+                           class="w-full pl-10 pr-4 py-2.5 border border-gray-200
+                                  rounded-xl text-sm focus:outline-none focus:ring-2
+                                  focus:ring-primary-500 focus:border-transparent
+                                  transition-all" />
+                    <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <span asp-validation-for="Password"
+                      class="text-xs text-red-500"></span>
+            </div>
+            <!-- ── Confirm Password ── -->
+            <div class="flex flex-col gap-1.5">
+                <label asp-for="ConfirmPassword"
+                       class="text-sm font-medium text-gray-700">
+                    Confirm password
+                </label>
+                <div class="relative">
+                    <input asp-for="ConfirmPassword"
+                           placeholder="Repeat your password"
+                           class="w-full pl-10 pr-4 py-2.5 border border-gray-200
+                                  rounded-xl text-sm focus:outline-none focus:ring-2
+                                  focus:ring-primary-500 focus:border-transparent
+                                  transition-all" />
+                    <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400"
+                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                </div>
+                <span asp-validation-for="ConfirmPassword"
+                      class="text-xs text-red-500"></span>
+            </div>
+            <!-- ── Submit button ── -->
+            <button type="submit"
+                    class="w-full bg-primary-600 hover:bg-primary-700 text-white
+                           font-semibold py-2.5 rounded-xl transition-all duration-200
+                           text-sm shadow-lg shadow-primary-100
+                           hover:shadow-primary-200 hover:-translate-y-0.5
+                           active:translate-y-0 mt-2">
+                
+                Create account
+            </button>
+          
+          </form>
+        <!-- ── Sign in link ── -->
+        <p class="mt-6 text-center text-sm text-gray-500">
+            Already have an account?
+            <a href="/account/login"
+               class="text-primary-600 font-medium hover:underline">
+                Sign in
+            </a>
+        </p>
+
+    </div>
+    </div>
+</body>
+</html>
