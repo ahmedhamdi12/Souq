@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Souq.Models;
+using Souq.UnitOfWork;
 using Souq.ViewModels.Auth;
 
 namespace Souq.Controllers
@@ -9,13 +10,15 @@ namespace Souq.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
-        
+        private readonly IUnitOfWork _uow;
 
-        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager)
+
+        public AccountController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IUnitOfWork uow)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            
+            _uow = uow;
+
         }
 
         [HttpGet]
@@ -72,13 +75,37 @@ namespace Souq.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginViewModel model, string? returnUrl = null)
         {
-            if (!ModelState.IsValid)
-                return View(model);
-            var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+            if (!ModelState.IsValid) return View(model);
+
+            var result = await _signInManager.PasswordSignInAsync(
+                userName: model.Email,
+                password: model.Password,
+                isPersistent: model.RememberMe,
+                lockoutOnFailure: false);
+
             if (!result.Succeeded)
             {
-                ModelState.AddModelError(string.Empty, "Invalid Email or Password.");
+                ModelState.AddModelError(string.Empty, "Invalid email or password.");
                 return View(model);
+            }
+
+            /*
+                After successful login — merge guest cart into user cart.
+                Read the session cookie BEFORE it gets cleared.
+                Then find the user and merge their guest items.
+            */
+            var sessionId = Request.Cookies["souq_session_id"];
+            if (!string.IsNullOrEmpty(sessionId))
+            {
+                var user = await _userManager.FindByEmailAsync(model.Email);
+                if (user != null)
+                {
+                    await _uow.Cart.MergeGuestCartAsync(sessionId, user.Id);
+                    await _uow.SaveAsync();
+
+                    // Clear the guest session cookie — no longer needed
+                    Response.Cookies.Delete("souq_session_id");
+                }
             }
 
             if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
@@ -94,6 +121,20 @@ namespace Souq.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ForceLogout()
+        {
+            await _signInManager.SignOutAsync();
+
+            // Delete all cookies
+            foreach (var cookie in Request.Cookies.Keys)
+            {
+                Response.Cookies.Delete(cookie);
+            }
+
             return RedirectToAction("Index", "Home");
         }
 

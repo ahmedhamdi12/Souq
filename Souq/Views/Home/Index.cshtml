@@ -345,8 +345,8 @@
             For now it just logs to console so we can test
             the button without breaking anything.
         */
-        function addToCart(productId) {
-            console.log('Add to cart:', productId);
+        async function addToCart(productId) {
+            window.location.href = `/products/${productId}`;
         }
     </script>
 }

@@ -14,6 +14,9 @@
         public string? ImageUrl { get; set; }
         public bool IsActive { get; set; } = true;
 
+        public int AvailableStock => StockQuantity - ReservedQuantity;
+
+
         // Navigation properties
         public Product Product { get; set; } = null!;
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

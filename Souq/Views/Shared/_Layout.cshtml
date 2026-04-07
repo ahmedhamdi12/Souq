@@ -182,5 +182,27 @@
     </footer>
     
     @await RenderSectionAsync("Scripts", required: false)
+
+    <script>
+        /*
+            On every page load, fetch the current cart count
+            from the server and update the badge.
+        */
+        async function loadCartCount() {
+            try {
+                const res = await fetch('/cart/count');
+                const data = await res.json();
+                const badge = document.getElementById('cart-count');
+                if (badge) {
+                    badge.textContent = data.count;
+                    badge.classList.toggle('hidden', data.count === 0);
+                }
+            } catch (e) {
+                console.log('Cart count fetch failed', e);
+            }
+        }
+
+        loadCartCount();
+    </script>
 </body>
 </html>

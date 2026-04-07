@@ -1,0 +1,396 @@
+﻿@model Souq.ViewModels.Cart.CartViewModel
+@{
+	ViewData["Title"] = "Your Cart";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <!-- Page header -->
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Your cart</h1>
+        <p class="text-gray-500 text-sm mt-1">
+            @Model.TotalItems item@(Model.TotalItems != 1 ? "s" : "") in your cart
+        </p>
+    </div>
+
+    @if (Model.IsEmpty)
+    {
+        <!-- ── Empty state ── -->
+        <div class="text-center py-24 bg-white rounded-2xl border border-gray-100">
+            <div class="w-20 h-20 bg-gray-100 rounded-full flex items-center
+                            justify-center mx-auto mb-5">
+                <svg class="w-9 h-9 text-gray-400" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                </svg>
+            </div>
+            <h2 class="text-xl font-semibold text-gray-900 mb-2">
+                Your cart is empty
+            </h2>
+            <p class="text-gray-500 text-sm mb-6">
+                Looks like you haven't added anything yet.
+            </p>
+            <a href="/products"
+               class="inline-flex items-center gap-2 bg-primary-600
+                          hover:bg-primary-700 text-white font-medium px-6 py-2.5
+                          rounded-xl transition-colors">
+                Start shopping
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                </svg>
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+            <!-- ── Cart Items (left, 2 cols) ── -->
+            <div class="lg:col-span-2 space-y-4" id="cart-items">
+
+                @foreach (var item in Model.Items)
+                {
+                    <div class="bg-white rounded-2xl border border-gray-100
+                                        shadow-sm p-5 flex gap-4 items-start"
+                         id="cart-item-@item.CartItemId"
+                         data-item-id="@item.CartItemId">
+
+                        <!-- Product image -->
+                        <a href="/products/@item.ProductSlug"
+                           class="flex-shrink-0">
+                            <div class="w-20 h-20 rounded-xl overflow-hidden
+                                                bg-gray-50 border border-gray-100">
+                                @if (item.ImageUrl != null)
+                                {
+                                    <img src="@item.ImageUrl"
+                                         alt="@item.ProductName"
+                                         class="w-full h-full object-cover" />
+                                }
+                                else
+                                {
+                                    <div class="w-full h-full flex items-center
+                                                            justify-center">
+                                        <svg class="w-8 h-8 text-gray-300"
+                                             fill="none" stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round"
+                                                  stroke-linejoin="round"
+                                                  stroke-width="1"
+                                                  d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                                        </svg>
+                                    </div>
+                                }
+                            </div>
+                        </a>
+
+                        <!-- Product details -->
+                        <div class="flex-1 min-w-0">
+                            <a href="/products/@item.ProductSlug"
+                               class="font-medium text-gray-900 hover:text-primary-600
+                                              transition-colors text-sm line-clamp-2">
+                                @item.ProductName
+                            </a>
+
+                            <!-- Variation + Vendor -->
+                            <div class="flex flex-wrap gap-2 mt-1.5">
+                                @if (!string.IsNullOrEmpty(item.Color))
+                                {
+                                    <span class="text-xs bg-gray-100 text-gray-600
+                                                             px-2 py-0.5 rounded-full">
+                                        @item.Color
+                                    </span>
+                                }
+                                @if (!string.IsNullOrEmpty(item.Size))
+                                {
+                                    <span class="text-xs bg-gray-100 text-gray-600
+                                                             px-2 py-0.5 rounded-full">
+                                        @item.Size
+                                    </span>
+                                }
+                            <span class="text-xs text-gray-400">
+                                by @item.VendorName
+                            </span>
+                        </div>
+
+                        <!-- Quantity controls + remove -->
+                        <div class="flex items-center justify-between mt-3">
+
+                            <!-- Qty stepper -->
+                            <div class="flex items-center gap-2">
+                                <button onclick="updateQty(@item.CartItemId,
+                                                        @(item.Quantity - 1))"
+                                        class="w-7 h-7 flex items-center justify-center
+                                                       rounded-lg border border-gray-200
+                                                       text-gray-600 hover:bg-gray-50
+                                                       transition-colors text-sm font-medium">
+                                    −
+                                </button>
+
+                                <span id="qty-@item.CartItemId"
+                                      class="w-8 text-center text-sm font-medium
+                                                     text-gray-900">
+                                    @item.Quantity
+                                </span>
+
+                                <button onclick="updateQty(@item.CartItemId,
+                                                        @(item.Quantity + 1))"
+                                        class="w-7 h-7 flex items-center justify-center
+                                                       rounded-lg border border-gray-200
+                                                       text-gray-600 hover:bg-gray-50
+                                                       transition-colors text-sm font-medium"
+                                        @(item.Quantity >= item.MaxStock
+                                                                            ? "disabled" : "")>
+                                +
+                            </button>
+                        </div>
+
+                                <!-- Remove button -->
+                                <button onclick="removeItem(@item.CartItemId)"
+                                        class="text-xs text-red-500 hover:text-red-700
+                                                       flex items-center gap-1 transition-colors">
+                                    <svg class="w-3.5 h-3.5" fill="none"
+                                         stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round"
+                                              stroke-linejoin="round"
+                                              stroke-width="2"
+                                              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                    Remove
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Line total -->
+                        <div class="flex-shrink-0 text-right">
+                            <p id="line-@item.CartItemId"
+                               class="font-bold text-gray-900 text-sm">
+                                $@item.LineTotal.ToString("0.00")
+                            </p>
+                            <p class="text-xs text-gray-400 mt-0.5">
+                                $@item.UnitPrice.ToString("0.00") each
+                            </p>
+                        </div>
+                    </div>
+                        }
+            </div>
+
+            <!-- ── Order Summary (right, 1 col) ── -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-2xl border border-gray-100
+                                shadow-sm p-6 sticky top-24">
+                    <!--
+                        sticky top-24 → summary stays visible
+                        while user scrolls through long cart list
+                    -->
+
+                    <h2 class="font-bold text-gray-900 text-lg mb-5">
+                        Order summary
+                    </h2>
+
+                    <div class="space-y-3 text-sm">
+                        <div class="flex justify-between text-gray-600">
+                            <span>
+                                Subtotal
+                                (<span id="summary-count">@Model.TotalItems</span>
+                                items)
+                            </span>
+                            <span id="summary-subtotal" class="font-medium text-gray-900">
+                                $@Model.Subtotal.ToString("0.00")
+                            </span>
+                        </div>
+                        <div class="flex justify-between text-gray-600">
+                            <span>Shipping</span>
+                            <span class="text-green-600 font-medium">
+                                Calculated at checkout
+                            </span>
+                        </div>
+                        <div class="border-t border-gray-100 pt-3 flex justify-between">
+                            <span class="font-bold text-gray-900">Total</span>
+                            <span id="summary-total"
+                                  class="font-bold text-gray-900 text-lg">
+                                $@Model.Subtotal.ToString("0.00")
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Checkout button -->
+                    <a href="/checkout"
+                       class="mt-6 w-full inline-flex items-center justify-center
+                                  gap-2 bg-primary-600 hover:bg-primary-700 text-white
+                                  font-semibold py-3 rounded-xl transition-all
+                                  shadow-lg hover:-translate-y-0.5">
+                        Proceed to checkout
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
+                        </svg>
+                    </a>
+
+                    <!-- Continue shopping -->
+                    <a href="/products"
+                       class="mt-3 w-full inline-flex items-center justify-center
+                                  gap-1 text-sm text-gray-500 hover:text-primary-600
+                                  transition-colors py-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                        Continue shopping
+                    </a>
+
+                    <!-- Trust badges -->
+                    <div class="mt-6 pt-5 border-t border-gray-100
+                                    flex flex-col gap-2">
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <svg class="w-4 h-4 text-green-500" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                            </svg>
+                            Secure checkout with Stripe
+                        </div>
+                        <div class="flex items-center gap-2 text-xs text-gray-500">
+                            <svg class="w-4 h-4 text-blue-500" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round"
+                                      stroke-width="2"
+                                      d="M16 15v-1a4 4 0 00-4-4H8m0 0l3 3m-3-3l3-3m9 14V5a2 2 0 00-2-2H6a2 2 0 00-2 2v16l4-2 4 2 4-2 4 2z" />
+                            </svg>
+                            Free returns within 30 days
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        /*
+            updateQty — called when user clicks + or − buttons.
+            Sends AJAX POST to /cart/update with the new quantity.
+            If quantity is 0 → same as remove (handled in service).
+        */
+        async function updateQty(cartItemId, newQty) {
+            const res = await fetch('/cart/update', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ cartItemId, quantity: newQty })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                if (newQty <= 0) {
+                    // Remove the item row from DOM
+                    document.getElementById(`cart-item-${cartItemId}`)?.remove();
+                    checkIfEmpty();
+                } else {
+                    // Update qty display
+                    const qtyEl = document.getElementById(`qty-${cartItemId}`);
+                    if (qtyEl) qtyEl.textContent = newQty;
+
+                    // Update line total
+                    const lineEl = document.getElementById(`line-${cartItemId}`);
+                    if (lineEl) lineEl.textContent = `$${data.lineTotal}`;
+                }
+
+                // Update summary
+                updateSummary(data.cartCount, data.subTotal);
+            }
+        }
+
+        /*
+            removeItem — called when user clicks "Remove".
+            Sends AJAX POST to /cart/remove.
+            Removes the item card from the DOM smoothly.
+        */
+        async function removeItem(cartItemId) {
+            const res = await fetch('/cart/remove', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ cartItemId })
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                // Smooth fade out then remove
+                const el = document.getElementById(`cart-item-${cartItemId}`);
+                if (el) {
+                    el.style.transition = 'opacity 0.3s, transform 0.3s';
+                    el.style.opacity = '0';
+                    el.style.transform = 'translateX(20px)';
+                    setTimeout(() => {
+                        el.remove();
+                        checkIfEmpty();
+                    }, 300);
+                }
+                updateSummary(data.cartCount, data.subTotal);
+            }
+        }
+
+        /*
+            updateSummary — updates the order summary panel
+            and the navbar cart badge.
+        */
+        function updateSummary(count, subTotal) {
+            // Update navbar badge
+            const badge = document.getElementById('cart-count');
+            if (badge) {
+                badge.textContent = count;
+                badge.classList.toggle('hidden', count === 0);
+            }
+
+            // Update summary panel
+            const countEl = document.getElementById('summary-count');
+            const subtotalEl = document.getElementById('summary-subtotal');
+            const totalEl = document.getElementById('summary-total');
+
+            if (countEl) countEl.textContent = count;
+            if (subtotalEl) subtotalEl.textContent = `$${subTotal}`;
+            if (totalEl) totalEl.textContent = `$${subTotal}`;
+        }
+
+        /*
+            checkIfEmpty — if all items removed, reload page
+            to show the empty state UI.
+        */
+        function checkIfEmpty() {
+            const remaining = document.querySelectorAll('[id^="cart-item-"]');
+            if (remaining.length === 0) {
+                window.location.reload();
+            }
+        }
+
+        /*
+            getAntiForgeryToken — reads the hidden CSRF token
+            that ASP.NET embeds in every page automatically.
+            Required for all POST requests.
+        */
+        function getAntiForgeryToken() {
+            return document.querySelector(
+                'input[name="__RequestVerificationToken"]')?.value ?? '';
+        }
+    </script>
+
+    <!--
+        ASP.NET needs an anti-forgery token on the page even
+        for AJAX POST requests. This hidden form provides it.
+    -->
+    <form id="af-form">@Html.AntiForgeryToken()</form>
+}
