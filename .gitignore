@@ -366,3 +366,4 @@ FodyWeavers.xsd
 appsettings.Development.json
 appsettings.Local.json
 secrets.json
+/Souq/appsettings.Development.json
