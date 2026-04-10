@@ -1,0 +1,233 @@
+﻿@model Souq.ViewModels.Checkout.CheckoutViewModel
+@{
+    ViewData["Title"] = "Checkout";
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Checkout</h1>
+        <p class="text-gray-500 text-sm mt-1">
+            Complete your order details below
+        </p>
+    </div>
+
+    <form asp-controller="Checkout" asp-action="Index"
+          method="post" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+        @Html.AntiForgeryToken()
+
+        <!-- ── Left: Shipping Form ── -->
+        <div class="lg:col-span-2 space-y-6">
+
+            <div class="bg-white rounded-2xl border border-gray-100
+                        shadow-sm p-6">
+
+                <h2 class="font-bold text-gray-900 text-lg mb-5">
+                    Shipping information
+                </h2>
+
+                <!-- Validation errors -->
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    <div class="mb-5 p-4 bg-red-50 border border-red-100
+                                    rounded-xl">
+                        @foreach (var error in ViewData.ModelState.Values
+                                            .SelectMany(v => v.Errors))
+                        {
+                            <p class="text-sm text-red-600">
+                                @error.ErrorMessage
+                            </p>
+                        }
+                    </div>
+                }
+
+                <div class="space-y-4">
+
+                    <!-- Full Name -->
+                    <div>
+                        <label asp-for="FullName"
+                               class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Full name
+                        </label>
+                        <input asp-for="FullName"
+                               placeholder="John Doe"
+                               class="w-full px-4 py-2.5 border border-gray-200
+                                      rounded-xl text-sm focus:outline-none
+                                      focus:ring-2 focus:ring-primary-500
+                                      focus:border-transparent transition-all" />
+                        <span asp-validation-for="FullName"
+                              class="text-xs text-red-500 mt-1"></span>
+                    </div>
+
+                    <!-- Address -->
+                    <div>
+                        <label asp-for="Address"
+                               class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Street address
+                        </label>
+                        <input asp-for="Address"
+                               placeholder="123 Main St"
+                               class="w-full px-4 py-2.5 border border-gray-200
+                                      rounded-xl text-sm focus:outline-none
+                                      focus:ring-2 focus:ring-primary-500
+                                      focus:border-transparent transition-all" />
+                        <span asp-validation-for="Address"
+                              class="text-xs text-red-500 mt-1"></span>
+                    </div>
+
+                    <!-- City + Country -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label asp-for="City"
+                                   class="block text-sm font-medium
+                                          text-gray-700 mb-1.5">
+                                City
+                            </label>
+                            <input asp-for="City"
+                                   placeholder="New York"
+                                   class="w-full px-4 py-2.5 border border-gray-200
+                                          rounded-xl text-sm focus:outline-none
+                                          focus:ring-2 focus:ring-primary-500
+                                          focus:border-transparent transition-all" />
+                            <span asp-validation-for="City"
+                                  class="text-xs text-red-500 mt-1"></span>
+                        </div>
+                        <div>
+                            <label asp-for="Country"
+                                   class="block text-sm font-medium
+                                          text-gray-700 mb-1.5">
+                                Country
+                            </label>
+                            <input asp-for="Country"
+                                   placeholder="United States"
+                                   class="w-full px-4 py-2.5 border border-gray-200
+                                          rounded-xl text-sm focus:outline-none
+                                          focus:ring-2 focus:ring-primary-500
+                                          focus:border-transparent transition-all" />
+                            <span asp-validation-for="Country"
+                                  class="text-xs text-red-500 mt-1"></span>
+                        </div>
+                    </div>
+
+                    <!-- Phone -->
+                    <div>
+                        <label asp-for="Phone"
+                               class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Phone number
+                        </label>
+                        <input asp-for="Phone"
+                               placeholder="+1 234 567 8900"
+                               class="w-full px-4 py-2.5 border border-gray-200
+                                      rounded-xl text-sm focus:outline-none
+                                      focus:ring-2 focus:ring-primary-500
+                                      focus:border-transparent transition-all" />
+                        <span asp-validation-for="Phone"
+                              class="text-xs text-red-500 mt-1"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment info notice -->
+            <div class="bg-blue-50 border border-blue-100 rounded-2xl p-5
+                        flex items-start gap-3">
+                <svg class="w-5 h-5 text-blue-500 shrink-0 mt-0.5"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div>
+                    <p class="text-sm font-medium text-blue-800">
+                        Secure payment via Stripe
+                    </p>
+                    <p class="text-xs text-blue-600 mt-0.5">
+                        You'll be redirected to Stripe's secure checkout page
+                        to enter your card details. We never store your
+                        payment information.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Right: Order Summary ── -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl border border-gray-100
+                        shadow-sm p-6 sticky top-24">
+
+                <h2 class="font-bold text-gray-900 text-lg mb-5">
+                    Order summary
+                </h2>
+
+                <!-- Items -->
+                <div class="space-y-3 mb-5">
+                    @foreach (var item in Model.Cart.Items)
+                    {
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-lg overflow-hidden
+                                            bg-gray-50 flex-shrink-0 border
+                                            border-gray-100">
+                                @if (item.ImageUrl != null)
+                                {
+                                    <img src="@item.ImageUrl"
+                                         alt="@item.ProductName"
+                                         class="w-full h-full object-cover" />
+                                }
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-xs font-medium text-gray-900
+                                              truncate">
+                                    @item.ProductName
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    @item.VariationName × @item.Quantity
+                                </p>
+                            </div>
+                            <p class="text-xs font-bold text-gray-900
+                                          flex-shrink-0">
+                                $@item.LineTotal.ToString("0.00")
+                            </p>
+                        </div>
+                    }
+                </div>
+
+                <!-- Totals -->
+                <div class="space-y-2 text-sm border-t border-gray-100 pt-4">
+                    <div class="flex justify-between text-gray-600">
+                        <span>Subtotal</span>
+                        <span>$@Model.Cart.Subtotal.ToString("0.00")</span>
+                    </div>
+                    <div class="flex justify-between text-gray-600">
+                        <span>Shipping</span>
+                        <span class="text-green-600">Free</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-gray-900
+                                pt-2 border-t border-gray-100">
+                        <span>Total</span>
+                        <span>$@Model.Cart.Subtotal.ToString("0.00")</span>
+                    </div>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit"
+                        class="mt-6 w-full flex items-center justify-center
+                               gap-2 bg-primary-600 hover:bg-primary-700
+                               text-white font-semibold py-3 rounded-xl
+                               transition-all shadow-lg hover:-translate-y-0.5">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Pay with Stripe
+                </button>
+
+                <p class="text-xs text-center text-gray-400 mt-3">
+                    By placing your order you agree to our terms of service
+                </p>
+            </div>
+        </div>
+
+    </form>
+</div>

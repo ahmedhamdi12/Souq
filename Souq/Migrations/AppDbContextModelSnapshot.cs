@@ -263,7 +263,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("VariationId");
 
-                    b.ToTable("CartItems");
+                    b.ToTable("CartItems", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.Category", b =>
@@ -295,7 +295,7 @@ namespace Souq.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.Department", b =>
@@ -328,7 +328,7 @@ namespace Souq.Migrations
                     b.HasIndex("Slug")
                         .IsUnique();
 
-                    b.ToTable("Departments");
+                    b.ToTable("Departments", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.Order", b =>
@@ -398,7 +398,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Orders");
+                    b.ToTable("Orders", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.OrderItem", b =>
@@ -451,7 +451,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("OrderItems");
+                    b.ToTable("OrderItems", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.Product", b =>
@@ -510,7 +510,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("Products");
+                    b.ToTable("Products", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.ProductImage", b =>
@@ -541,7 +541,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductImages");
+                    b.ToTable("ProductImages", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.ProductVariation", b =>
@@ -589,7 +589,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("ProductId");
 
-                    b.ToTable("ProductVariations");
+                    b.ToTable("ProductVariations", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.Review", b =>
@@ -622,7 +622,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Reviews");
+                    b.ToTable("Reviews", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.VendorPayout", b =>
@@ -659,7 +659,7 @@ namespace Souq.Migrations
 
                     b.HasIndex("VendorId");
 
-                    b.ToTable("VendorPayouts");
+                    b.ToTable("VendorPayouts", (string)null);
                 });
 
             modelBuilder.Entity("Souq.Models.VendorProfile", b =>
@@ -708,7 +708,7 @@ namespace Souq.Migrations
                     b.HasIndex("UserId")
                         .IsUnique();
 
-                    b.ToTable("VendorProfiles");
+                    b.ToTable("VendorProfiles", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

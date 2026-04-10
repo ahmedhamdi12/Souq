@@ -131,5 +131,11 @@ namespace Souq.Services.Implementations
             await _uow.SaveAsync();
             return await GetCartCountAsync(userId, sessionId);
         }
+
+        public async Task ClearCartAsync(string userId)
+        {
+            await _uow.Cart.ClearCartAsync(userId);
+            await _uow.SaveAsync();
+        }
     }
 }

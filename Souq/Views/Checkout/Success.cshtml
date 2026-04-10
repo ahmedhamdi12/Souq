@@ -1,0 +1,120 @@
+﻿@model Souq.ViewModels.Checkout.OrderSuccessViewModel
+@{
+    ViewData["Title"] = "Order Confirmed";
+}
+
+<div class="max-w-lg mx-auto px-4 py-20 text-center">
+
+    <!-- Animated checkmark -->
+    <div id="pending-icon"
+         class="w-20 h-20 bg-amber-100 rounded-full flex items-center
+                justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-amber-500 animate-spin"
+             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2"
+                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+        </svg>
+    </div>
+
+    <div id="success-icon"
+         class="w-20 h-20 bg-green-100 rounded-full flex items-center
+                justify-center mx-auto mb-6 hidden">
+        <svg class="w-10 h-10 text-green-500" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M5 13l4 4L19 7" />
+        </svg>
+    </div>
+
+    <div id="pending-text">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+            Confirming your payment...
+        </h1>
+        <p class="text-gray-500 text-sm">
+            Please wait while we confirm your payment with Stripe.
+        </p>
+    </div>
+
+    <div id="success-text" class="hidden">
+        <h1 class="text-2xl font-bold text-gray-900 mb-2">
+            Payment confirmed!
+        </h1>
+        <p class="text-gray-500 text-sm mb-6">
+            Thank you for your order. We'll send you a confirmation email shortly.
+        </p>
+
+        <div class="bg-white rounded-2xl border border-gray-100
+                    shadow-sm p-6 text-left mb-6">
+            <div class="flex justify-between text-sm mb-2">
+                <span class="text-gray-500">Order number</span>
+                <span class="font-bold text-gray-900">@Model.OrderNumber</span>
+            </div>
+            <div class="flex justify-between text-sm">
+                <span class="text-gray-500">Total paid</span>
+                <span class="font-bold text-gray-900">
+                    $@Model.Total.ToString("0.00")
+                </span>
+            </div>
+        </div>
+
+        <a href="/orders"
+           class="inline-flex items-center gap-2 bg-primary-600
+                  hover:bg-primary-700 text-white font-semibold
+                  px-8 py-3 rounded-xl transition-all">
+            View my orders
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const orderId = @Model.OrderId;
+        let attempts  = 0;
+        const maxAttempts = 10; // poll for max 20 seconds
+
+        /*
+            Poll every 2 seconds to check if webhook has fired
+            and marked the order as Paid.
+            After 20 seconds stop polling regardless.
+        */
+        async function checkPayment() {
+            if (attempts >= maxAttempts) {
+                showSuccess(); // assume paid after timeout
+                return;
+            }
+
+            attempts++;
+
+            try {
+                const res  = await fetch(`/checkout/check-payment?orderId=${orderId}`);
+                const data = await res.json();
+
+                if (data.isPaid) {
+                    showSuccess();
+                } else {
+                    setTimeout(checkPayment, 2000);
+                }
+            } catch (e) {
+                setTimeout(checkPayment, 2000);
+            }
+        }
+
+        function showSuccess() {
+            document.getElementById('pending-icon').classList.add('hidden');
+            document.getElementById('pending-text').classList.add('hidden');
+            document.getElementById('success-icon').classList.remove('hidden');
+            document.getElementById('success-text').classList.remove('hidden');
+
+            // Update cart badge to 0
+            const badge = document.getElementById('cart-count');
+            if (badge) {
+                badge.textContent = '0';
+                badge.classList.add('hidden');
+            }
+        }
+
+        // Start polling after 1 second
+        setTimeout(checkPayment, 1000);
+    </script>
+}

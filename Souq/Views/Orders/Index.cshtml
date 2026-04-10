@@ -1,0 +1,87 @@
+﻿@model List<Souq.ViewModels.Orders.OrderListItemViewModel>
+@{
+	ViewData["Title"] = "My Orders";
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">My orders</h1>
+        <p class="text-gray-500 text-sm mt-1">
+            Track and manage your purchases
+        </p>
+    </div>
+    @if (!Model.Any())
+    {
+        <div class="text-center py-20 bg-white rounded-2xl
+                        border border-gray-100">
+            <div class="w-16 h-16 bg-gray-100 rounded-full flex items-center
+                            justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-gray-400" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="1.5"
+                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
+            </div>
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                No orders yet
+            </h3>
+            <p class="text-gray-500 text-sm mb-6">
+                When you place an order it will appear here.
+            </p>
+            <a href="/products"
+               class="inline-flex items-center gap-2 bg-primary-600
+                          hover:bg-primary-700 text-white font-medium
+                          px-6 py-2.5 rounded-xl transition-colors">
+                Start shopping
+            </a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-4">
+            @foreach (var order in Model)
+            {
+                <a href="/orders/@order.OrderId"
+                   class="block bg-white rounded-2xl border border-gray-100
+                                  shadow-sm hover:shadow-md transition-all
+                                  hover:-translate-y-0.5 p-5">
+
+                    <div class="flex items-center justify-between flex-wrap gap-4">
+
+                        <!-- Order info -->
+                        <div>
+                            <div class="flex items-center gap-3 mb-1">
+                                <p class="font-bold text-gray-900 text-sm">
+                                    @order.OrderNumber
+                                </p>
+                                <span class="text-xs font-medium px-2.5 py-1
+                                                     rounded-full @order.StatusColor">
+                                    @order.Status
+                                </span>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                @order.CreatedAt.ToString("MMMM dd, yyyy")
+                                · @order.ItemCount
+                                item@(order.ItemCount != 1 ? "s" : "")
+                            </p>
+                        </div>
+
+                        <!-- Total + arrow -->
+                        <div class="flex items-center gap-4">
+                            <p class="font-bold text-gray-900">
+                                $@order.Total.ToString("0.00")
+                            </p>
+                            <svg class="w-5 h-5 text-gray-400" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2" d="M9 5l7 7-7 7" />
+                            </svg>
+                        </div>
+                    </div>
+                </a>
+            }
+        </div>
+    }
+</div>

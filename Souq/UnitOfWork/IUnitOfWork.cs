@@ -10,6 +10,7 @@ namespace Souq.UnitOfWork
         ICartRepository Cart { get; }
         IVendorRepository Vendors { get; }
         IDepartmentRepository Departments { get; }
+        IVariationRepository Variations { get; }
         Task<int> SaveAsync();
     }
 }

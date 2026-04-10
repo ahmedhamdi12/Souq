@@ -8,6 +8,7 @@ using Souq.UnitOfWork;
 using Souq.Services.Interfaces;
 using Souq.Services.Implementations;
 
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
@@ -43,8 +44,10 @@ builder.Services.AddScoped<IVendorRepository, VendorRepository>();
 builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
+builder.Services.AddScoped<IVariationRepository, VariationRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add services to the container.
 
@@ -63,6 +66,7 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.CheckConsentNeeded = context => false;
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
 });
+Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
 var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
@@ -539,7 +543,20 @@ app.MapControllerRoute(
     name: "productDetail",
     pattern: "products/{slug}",
     defaults: new { controller = "Products", action = "Details" });
+app.MapControllerRoute(
+    name: "vendorOrders",
+    pattern: "vendor/orders/{id?}",
+    defaults: new { controller = "Vendor", action = "Orders" });
 
+app.MapControllerRoute(
+    name: "vendorOrderDetail",
+    pattern: "vendor/orders/{id}",
+    defaults: new { controller = "Vendor", action = "OrderDetail" });
+
+app.MapControllerRoute(
+    name: "orderDetail",
+    pattern: "orders/{id}",
+    defaults: new { controller = "Orders", action = "Detail" });
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")

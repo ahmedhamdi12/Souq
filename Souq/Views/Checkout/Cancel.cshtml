@@ -1,0 +1,32 @@
+﻿@{
+    ViewData["Title"] = "Payment Cancelled";
+}
+
+<div class="max-w-lg mx-auto px-4 py-20 text-center">
+    <div class="w-20 h-20 bg-red-100 rounded-full flex items-center
+                justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-red-500" fill="none"
+             stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round"
+                  stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+    </div>
+    <h1 class="text-2xl font-bold text-gray-900 mb-2">Payment cancelled</h1>
+    <p class="text-gray-500 text-sm mb-8">
+        Your payment was cancelled. Your cart is still saved.
+    </p>
+    <div class="flex gap-3 justify-center">
+        <a href="/cart"
+           class="inline-flex items-center gap-2 bg-primary-600
+                  hover:bg-primary-700 text-white font-semibold
+                  px-6 py-2.5 rounded-xl transition-all">
+            Back to cart
+        </a>
+        <a href="/products"
+           class="inline-flex items-center gap-2 bg-white border
+                  border-gray-200 text-gray-700 hover:bg-gray-50
+                  font-semibold px-6 py-2.5 rounded-xl transition-all">
+            Continue shopping
+        </a>
+    </div>
+</div>
