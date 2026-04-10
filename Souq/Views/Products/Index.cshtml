@@ -1,0 +1,364 @@
+﻿@model Souq.ViewModels.Products.ProductsListViewModel
+@{
+    ViewData["Title"] = Model.PageTitle;
+}
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Page header -->
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">@Model.PageTitle</h1>
+        <p class="text-gray-500 text-sm mt-1">
+            @Model.TotalProducts product@(Model.TotalProducts != 1 ? "s" : "") found
+        </p>
+    </div>
+    <div class="flex flex-col lg:flex-row gap-8">
+        <!-- ══ Sidebar filters ══ -->
+        <aside class="w-full lg:w-64 flex-shrink-0">
+            <div class="bg-white rounded-2xl border border-gray-100
+                        shadow-sm p-5 sticky top-24">
+
+                <h2 class="font-bold text-gray-900 mb-4">Filter</h2>
+
+                <!-- Search -->
+                <form method="get" action="/products" class="mb-5">
+                    <div class="relative">
+                        <input type="text" name="q"
+                               value="@Model.SearchQuery"
+                               placeholder="Search products..."
+                               class="w-full pl-9 pr-4 py-2 border border-gray-200
+                                      rounded-xl text-sm focus:outline-none
+                                      focus:ring-2 focus:ring-primary-500
+                                      focus:border-transparent" />
+                        <svg class="absolute left-3 top-2.5 w-4 h-4 text-gray-400"
+                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
+                        </svg>
+                    </div>
+                </form>
+
+                <!-- Departments -->
+                <div>
+                    <h3 class="text-xs font-semibold text-gray-500
+                               uppercase tracking-wide mb-3">
+                        Departments
+                    </h3>
+                    <div class="space-y-1">
+                        <a href="/products"
+                           class="flex items-center justify-between px-3 py-2
+                                  rounded-lg text-sm transition-colors
+                                  @(string.IsNullOrEmpty(Model.DepartmentSlug)
+                                                                 ? "bg-primary-50 text-primary-700 font-medium"
+                                                                 : "text-gray-600 hover:bg-gray-50")">
+                            All products
+                        </a>
+
+                        @foreach (var dept in Model.Departments)
+                        {
+                            <div x-data="{ open: false }">
+                                <div class="flex items-center justify-between px-3 py-2
+                        rounded-lg text-sm transition-colors
+                        @(Model.DepartmentSlug == dept.Slug
+                                                             ? "bg-primary-50 text-primary-700 font-medium"
+                                                             : "text-gray-600 hover:bg-gray-50")">
+
+                                <!--
+                                    Link and toggle are now siblings, not nested.
+                                    Link handles navigation, button handles dropdown.
+                                -->
+                                <a href="/products/department/@dept.Slug"
+                                   class="flex-1">
+                                    @dept.Name
+                                </a>
+
+                                @if (dept.Categories.Any())
+                                    {
+                                        <button @@click="open = !open"
+                                                class="p-1 rounded hover:bg-gray-200
+                                       transition-colors ml-1">
+                                            <svg class="w-3.5 h-3.5 transition-transform"
+                                                 x-bind:class="open ? 'rotate-180' : ''"
+                                                 fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path stroke-linecap="round"
+                                                      stroke-linejoin="round"
+                                                      stroke-width="2" d="M19 9l-7 7-7-7" />
+                                            </svg>
+                                        </button>
+                                    }
+                                </div>
+
+                                <!-- Categories dropdown -->
+                                <div x-show="open" x-transition class="ml-3 mt-1 space-y-1">
+                                    @foreach (var cat in dept.Categories)
+                                    {
+                                        <a href="/products?dept=@dept.Slug&category=@cat.Slug"
+                                           class="block px-3 py-1.5 rounded-lg text-xs
+                                  transition-colors
+                                  @(Model.CategorySlug == cat.Slug
+                                                                         ? "bg-primary-50 text-primary-700 font-medium"
+                                                                         : "text-gray-500 hover:bg-gray-50 hover:text-gray-700")">
+                                    @cat.Name
+                                </a>
+                                                                }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Clear filters -->
+                @if (Model.HasFilters)
+                {
+                    <div class="mt-5 pt-4 border-t border-gray-100">
+                        <a href="/products"
+                           class="text-sm text-red-500 hover:text-red-700
+                                      flex items-center gap-1.5 transition-colors">
+                            <svg class="w-3.5 h-3.5" fill="none"
+                                 stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round"
+                                      stroke-linejoin="round"
+                                      stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                            Clear filters
+                        </a>
+                    </div>
+                }
+            </div>
+        </aside>
+        <!-- ══ Main content ══ -->
+        <div class="flex-1">
+
+            <!-- Sort bar -->
+            <div class="flex items-center justify-between mb-5">
+                <p class="text-sm text-gray-500">
+                    Showing
+                    <span class="font-medium text-gray-900">
+                        @((Model.CurrentPage - 1) * Model.PageSize + 1)–@(Math.Min(Model.CurrentPage * Model.PageSize, Model.TotalProducts))
+                    </span>
+                    of
+                    <span class="font-medium text-gray-900">
+                        @Model.TotalProducts
+                    </span>
+                </p>
+
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-500">Sort by:</span>
+                    <select onchange="window.location.href=this.value"
+                            class="text-sm border border-gray-200 rounded-xl
+                                   px-3 py-1.5 focus:outline-none
+                                   focus:ring-2 focus:ring-primary-500
+                                   bg-white text-gray-700">
+                        @foreach (var option in new[]
+                        {
+                            new { Value = "newest", Label = "Newest" },
+                            new { Value = "price-asc", Label = "Price: Low to High" },
+                            new { Value = "price-desc", Label = "Price: High to Low" },
+                            new { Value = "name", Label = "Name A-Z" },
+                        })
+                        {
+                            var url = $"/products?sort={option.Value}" +
+                                      (Model.SearchQuery != null
+                                          ? $"&q={Model.SearchQuery}" : "") +
+                                      (Model.DepartmentSlug != null
+                                          ? $"&dept={Model.DepartmentSlug}" : "") +
+                                      (Model.CategorySlug != null
+                                          ? $"&category={Model.CategorySlug}" : "");
+                            <option value="@url"
+                                    selected="@(Model.SortBy == option.Value
+                                                ? "selected" : null)">
+                                @option.Label
+                            </option>
+                        }
+                    </select>
+                </div>
+            </div>
+            <!-- Products grid -->
+            @if (!Model.Products.Any())
+            {
+                <div class="text-center py-20 bg-white rounded-2xl
+                            border border-gray-100">
+                    <div class="w-16 h-16 bg-gray-100 rounded-full
+                                flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-gray-400" fill="none"
+                             stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="1.5"
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0"/>
+                        </svg>
+                    </div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                        No products found
+                    </h3>
+                    <p class="text-gray-500 text-sm mb-5">
+                        Try adjusting your search or filters.
+                    </p>
+                    <a href="/products"
+                       class="text-sm text-primary-600 hover:underline">
+                        Browse all products
+                    </a>
+                </div>
+            }
+            else
+            {
+                <div class="grid grid-cols-1 sm:grid-cols-2
+                            xl:grid-cols-3 gap-5">
+                    @foreach (var product in Model.Products)
+                    {
+                        
+                            var mainImage = product.Images
+                                .FirstOrDefault(i => i.IsMain)?.ImageUrl
+                                ?? product.Images.FirstOrDefault()?.ImageUrl;
+
+                            var displayPrice = product.HasVariations
+                                && product.Variations.Any()
+                                ? product.Variations.Min(v => v.Price)
+                                : product.BasePrice;
+
+                            var priceLabel = product.HasVariations
+                                && product.Variations.Any()
+                                ? "From" : "";
+                        
+
+                        <div class="group bg-white rounded-2xl border
+                                    border-gray-100 shadow-sm hover:shadow-lg
+                                    transition-all duration-300 overflow-hidden
+                                    hover:-translate-y-1 flex flex-col">
+
+                            <!-- Image -->
+                            <a href="/products/@product.Slug" class="block">
+                                <div class="relative aspect-square bg-gray-50
+                                            overflow-hidden">
+                                    @if (mainImage != null)
+                                    {
+                                        <img src="@mainImage"
+                                             alt="@product.Name"
+                                             class="w-full h-full object-cover
+                                                    group-hover:scale-105
+                                                    transition-transform duration-500"/>
+                                    }
+                                    else
+                                    {
+                                        <div class="w-full h-full flex items-center
+                                                    justify-center bg-gray-100">
+                                            <svg class="w-12 h-12 text-gray-300"
+                                                 fill="none" stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path stroke-linecap="round"
+                                                      stroke-linejoin="round"
+                                                      stroke-width="1"
+                                                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                            </svg>
+                                        </div>
+                                    }
+
+                                    <!-- Vendor badge -->
+                                    <div class="absolute bottom-2 left-2">
+                                        <span class="text-xs bg-white
+                                                     bg-opacity-90 text-gray-700
+                                                     font-medium px-2 py-1
+                                                     rounded-lg shadow-sm">
+                                            @product.Vendor.StoreName
+                                        </span>
+                                    </div>
+                                </div>
+                            </a>
+
+                            <!-- Info -->
+                            <div class="p-4 flex flex-col flex-1">
+                                <a href="/products/@product.Slug">
+                                    <h3 class="font-medium text-gray-900
+                                               text-sm line-clamp-2 mb-1
+                                               group-hover:text-primary-600
+                                               transition-colors">
+                                        @product.Name
+                                    </h3>
+                                </a>
+
+                                <p class="text-xs text-gray-400 mb-auto">
+                                    @product.Category.Name
+                                </p>
+
+                                <!-- Price + cart button -->
+                                <div class="flex items-center justify-between mt-3">
+                                    <p class="text-base font-bold text-gray-900">
+                                        @if (!string.IsNullOrEmpty(priceLabel))
+                                        {
+                                            <span class="text-xs font-normal
+                                                         text-gray-500 mr-0.5">
+                                                @priceLabel
+                                            </span>
+                                        }
+                                        $@displayPrice.ToString("0.00")
+                                    </p>
+
+                                    <a href="/products/@product.Slug"
+                                       class="w-8 h-8 flex items-center
+                                              justify-center bg-primary-600
+                                              text-white rounded-lg
+                                              hover:bg-primary-700
+                                              transition-colors shadow-sm">
+                                        <svg class="w-4 h-4" fill="none"
+                                             stroke="currentColor"
+                                             viewBox="0 0 24 24">
+                                            <path stroke-linecap="round"
+                                                  stroke-linejoin="round"
+                                                  stroke-width="2"
+                                                  d="M12 4v16m8-8H4"/>
+                                        </svg>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+
+                <!-- Pagination -->
+                @if (Model.TotalPages > 1)
+                {
+                    <div class="flex items-center justify-center gap-2 mt-10">
+
+                        @* Previous *@
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <a href="/products?page=@(Model.CurrentPage - 1)&sort=@Model.SortBy@(Model.SearchQuery != null ? $"&q={Model.SearchQuery}" : "")@(Model.DepartmentSlug != null ? $"&dept={Model.DepartmentSlug}" : "")"
+                               class="px-4 py-2 text-sm font-medium text-gray-600
+                                      bg-white border border-gray-200 rounded-xl
+                                      hover:bg-gray-50 transition-colors">
+                                Previous
+                            </a>
+                        }
+
+                        @* Page numbers *@
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2);
+                              i <= Math.Min(Model.TotalPages,
+                                           Model.CurrentPage + 2); i++)
+                        {
+                            <a href="/products?page=@i&sort=@Model.SortBy@(Model.SearchQuery != null ? $"&q={Model.SearchQuery}" : "")@(Model.DepartmentSlug != null ? $"&dept={Model.DepartmentSlug}" : "")"
+                               class="w-10 h-10 flex items-center justify-center
+                                      text-sm font-medium rounded-xl transition-colors
+                                      @(i == Model.CurrentPage
+                                          ? "bg-primary-600 text-white"
+                                          : "text-gray-600 bg-white border border-gray-200 hover:bg-gray-50")">
+                                @i
+                            </a>
+                        }
+
+                        @* Next *@
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <a href="/products?page=@(Model.CurrentPage + 1)&sort=@Model.SortBy@(Model.SearchQuery != null ? $"&q={Model.SearchQuery}" : "")@(Model.DepartmentSlug != null ? $"&dept={Model.DepartmentSlug}" : "")"
+                               class="px-4 py-2 text-sm font-medium text-gray-600
+                                      bg-white border border-gray-200 rounded-xl
+                                      hover:bg-gray-50 transition-colors">
+                                Next
+                            </a>
+                        }
+                    </div>
+                }
+            }
+        </div>
+    </div>
+</div>
+

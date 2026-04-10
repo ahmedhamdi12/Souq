@@ -11,12 +11,24 @@ namespace Souq.Repositories.Implemntations
         {
         }
 
+        public new async Task<IEnumerable<Product>> GetAllAsync() =>
+        await _context.Products
+        .Include(p => p.Vendor)
+        .Include(p => p.Images)
+        .Include(p => p.Variations)
+        .Include(p => p.Category)
+            .ThenInclude(c => c.Department)
+        .OrderByDescending(p => p.CreatedAt)
+        .ToListAsync();
+
         public async Task<IEnumerable<Product>> GetApprovedProductAsync()
         {
             return await _dbSet.Where(p => p.IsApproved && p.IsActive)
                 .Include(p => p.Vendor)
                 .Include(p => p.Images)
                 .Include(p => p.Variations)
+                .Include(p => p.Category)
+                    .ThenInclude(c => c.Department)
                 .OrderByDescending(p => p.CreatedAt)
                 .ToListAsync();
         }
@@ -33,6 +45,8 @@ namespace Souq.Repositories.Implemntations
                 .Include(p => p.Vendor)
                 .Include(p => p.Images)
                 .Include(p => p.Variations)
+                .Include(p => p.Category)
+                    .ThenInclude(c => c.Department)
                 .ToListAsync();
         }
 
@@ -40,6 +54,7 @@ namespace Souq.Repositories.Implemntations
         {
             return await _dbSet.Where(p => p.VendorId == vendorId)
                 .Include(p => p.Category)
+                        .ThenInclude(c => c.Department)
                 .Include(p => p.Images)
                 .Include(p => p.Variations)
                 .OrderByDescending(p => p.CreatedAt)

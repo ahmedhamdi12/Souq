@@ -540,6 +540,25 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapControllerRoute(
+    name: "productSearch",
+    pattern: "products/search",
+    defaults: new { controller = "Products", action = "Search" });
+
+app.MapControllerRoute(
+    name: "productDepartment",
+    pattern: "products/department/{slug}",
+    defaults: new { controller = "Products", action = "Department" });
+
+app.MapControllerRoute(
+    name: "productDetail",
+    pattern: "products/{slug}",
+    defaults: new { controller = "Products", action = "Details" });
+
+app.MapControllerRoute(
+    name: "products",
+    pattern: "products",
+    defaults: new { controller = "Products", action = "Index" });
+app.MapControllerRoute(
     name: "productDetail",
     pattern: "products/{slug}",
     defaults: new { controller = "Products", action = "Details" });

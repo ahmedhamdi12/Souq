@@ -83,6 +83,75 @@ namespace Souq.Services.Implementations
             return viewModel;
         }
 
+        public async Task<ProductsListViewModel> GetProductsListAsync(string? search, string? departmentSlug, string? categorySlug, string sortBy, int page, int pageSize)
+        {
+            var allProducts = await _uow.Products.GetApprovedProductAsync();
+            var departments = await _uow.Departments.GetAllAsync();
+
+            var query = allProducts.AsQueryable();
+            if(!string.IsNullOrWhiteSpace(search))
+            {
+                var q = search.ToLower();
+                query = query.Where
+                    (p => p.Name.ToLower().Contains(q) ||
+                    (p.Description !=null && p.Description.ToLower().Contains(q)) ||
+                    (p.Vendor.StoreName != null && p.Vendor.StoreName.ToLower().Contains(q)));
+            }
+
+            // Apply department filter
+            if (!string.IsNullOrWhiteSpace(departmentSlug))
+            {
+                query = query.Where(p =>
+                    p.Category.Department.Slug == departmentSlug);
+            }
+
+            // Apply category filter
+            if (!string.IsNullOrWhiteSpace(categorySlug))
+            {
+                query = query.Where(p =>
+                    p.Category.Slug == categorySlug);
+            }
+
+            // Apply sorting
+            query = sortBy switch
+            {
+                "price-asc" => query.OrderBy(p =>
+                    p.HasVariations && p.Variations.Any()
+                        ? p.Variations.Min(v => v.Price)
+                        : p.BasePrice),
+                "price-desc" => query.OrderByDescending(p =>
+                    p.HasVariations && p.Variations.Any()
+                        ? p.Variations.Min(v => v.Price)
+                        : p.BasePrice),
+                "name" => query.OrderBy(p => p.Name),
+                _ => query.OrderByDescending(p => p.CreatedAt)
+            };
+
+            var totalProducts = query.Count();
+            var totalPages = (int)Math.Ceiling(
+                totalProducts / (double)pageSize);
+
+            // Apply pagination
+            var products = query
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+            
+            return new ProductsListViewModel
+            {
+                Products = products,
+                Departments = departments.ToList(),
+                SearchQuery = search,
+                DepartmentSlug = departmentSlug,
+                CategorySlug = categorySlug,
+                SortBy = sortBy,
+                CurrentPage = page,
+                TotalPages = totalPages,
+                TotalProducts = totalProducts,
+                PageSize = pageSize
+            };
+        }
+
         public async Task<List<Product>> GetRelatedProductsAsync(int categoryId, int excludeProductId, int count = 4)
         {
             var products = await _uow.Products.GetProductsByCategoryIdAsync(categoryId);
