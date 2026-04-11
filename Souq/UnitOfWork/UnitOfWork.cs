@@ -15,8 +15,9 @@ namespace Souq.UnitOfWork
         public IVendorRepository Vendors { get; }
         public IDepartmentRepository Departments { get; }
         public IVariationRepository Variations { get; }
+        public ICategoryRepository Categories { get; }
 
-        public UnitOfWork(AppDbContext context, IProductRepository products, IOrderRepository orders, ICartRepository cart, IVendorRepository vendors, IDepartmentRepository departments, IVariationRepository variations)
+        public UnitOfWork(AppDbContext context, IProductRepository products, IOrderRepository orders, ICartRepository cart, IVendorRepository vendors, IDepartmentRepository departments, IVariationRepository variations, ICategoryRepository categories)
         {
             _context = context;
             Products = products;
@@ -25,6 +26,7 @@ namespace Souq.UnitOfWork
             Variations = variations;
             Vendors = vendors;
             Departments = departments;
+            Categories = categories;
         }
 
         public void Dispose() => _context.Dispose();

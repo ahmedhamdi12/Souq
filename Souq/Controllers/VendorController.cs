@@ -12,12 +12,16 @@ namespace Souq.Controllers
     public class VendorController : Controller
     {
         private readonly IOrderService _orderService;
+        private readonly IVendorService _vendorService;
         private readonly IUnitOfWork _uow;
+        private readonly IWebHostEnvironment _env;
 
-        public VendorController(IOrderService orderService, IUnitOfWork uow)
+        public VendorController(IOrderService orderService, IVendorService vendorService, IUnitOfWork uow, IWebHostEnvironment env)
         {
             _orderService = orderService;
+            _vendorService = vendorService;
             _uow = uow;
+            _env = env;
         }
 
         // get vendor profile 
@@ -28,6 +32,83 @@ namespace Souq.Controllers
             return vendor?.Id ?? 0;
         }
 
+        private string GetUserId() =>
+            User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+
+        // ── GET: /vendor/dashboard
+        public async Task<IActionResult> Dashboard()
+        {
+            var model = await _vendorService.GetDashboardAsync(GetUserId());
+            if(model == null) return RedirectToAction("Index", "Home");
+            return View(model);
+        }
+
+        // ── GET: /vendor/products
+        public async Task<IActionResult> Products()
+        {
+            var vendorId = await GetVendorIdAsync();
+            if(vendorId == 0) return RedirectToAction("Index", "Home");
+            var products = await _vendorService.GetVendorProductsAsync(vendorId);
+            return View(products);
+        }
+
+        // ── GET: /vendor/products/create
+        public async Task<IActionResult> CreateProduct()
+        {
+            var vendorId = await GetVendorIdAsync();
+            var model = await _vendorService.GetProductsFormAsync(null, vendorId);
+            return View("ProductForm", model);
+        }
+
+        // ── GET: /vendor/products/edit/{id}
+        public async Task<IActionResult> EditProduct(int id)
+        {
+            var vendorId = await GetVendorIdAsync();
+            var model = await _vendorService.GetProductsFormAsync(id, vendorId);
+            return View("ProductForm", model);
+        }
+
+        // ── POST: /vendor/products/save
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SaveProduct(Souq.ViewModels.Vendor.ProductFormViewModel model)
+        {
+            var vendorId = await GetVendorIdAsync();
+            if (!ModelState.IsValid)
+            {
+                // Rebuild categories dropdown
+                var refreshed = await _vendorService.GetProductsFormAsync(model.Id, vendorId);
+                model.Categories = refreshed.Categories;
+                return View("ProductForm", model);
+            }
+            var success = await _vendorService.SaveProductsAsync(model, vendorId, _env);
+
+            if (!success) 
+            { 
+                ModelState.AddModelError("", "An error occurred while saving the product. Please try again.");
+                var refreshed = await _vendorService.GetProductsFormAsync(model.Id, vendorId);
+                model.Categories = refreshed.Categories;
+                return View("ProductForm", model);
+            }
+
+            TempData["success"] = model.IsEdit
+                ? "Product updated successfully!" : "Product created successfully! Waiting for Admin approval.";
+
+            return RedirectToAction("Products");
+        }
+
+        // ── POST: /vendor/products/delete
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteProduct(int id)
+        {
+            var vendorId = await GetVendorIdAsync();
+            await _vendorService.DeleteProductsAsync(id, vendorId);
+
+            TempData["success"] = "Product deleted successfully!";
+            
+            return RedirectToAction("Products");
+        }
         public async Task<IActionResult> Orders()
         {
             var vendorId = await GetVendorIdAsync();

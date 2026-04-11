@@ -1,0 +1,391 @@
+﻿@model Souq.ViewModels.Vendor.ProductFormViewModel
+@{
+    ViewData["Title"] = Model.IsEdit ? "Edit Product" : "Add Product";
+}
+
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <!-- Header -->
+    <div class="flex items-center gap-4 mb-8">
+        <a href="/vendor/products"
+           class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+            <svg class="w-5 h-5 text-gray-600" fill="none"
+                 stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                      stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">
+            @(Model.IsEdit ? "Edit product" : "Add new product")
+        </h1>
+    </div>
+    <form asp-controller="Vendor" asp-action="SaveProduct"
+          method="post" enctype="multipart/form-data"
+          class="space-y-6">
+
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+
+        <!-- Validation errors -->
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="p-4 bg-red-50 border border-red-100 rounded-xl">
+                @foreach (var error in ViewData.ModelState.Values
+                            .SelectMany(v => v.Errors))
+                {
+                    <p class="text-sm text-red-600">@error.ErrorMessage</p>
+                }
+            </div>
+        }
+
+        <!-- Basic info -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 class="font-bold text-gray-900 mb-5">Basic information</h2>
+            <div class="space-y-4">
+
+                <div>
+                    <label asp-for="Name"
+                           class="block text-sm font-medium text-gray-700 mb-1.5">
+                        Product name
+                    </label>
+                    <input asp-for="Name" placeholder="e.g. Wireless Headphones"
+                           class="w-full px-4 py-2.5 border border-gray-200
+                                  rounded-xl text-sm focus:outline-none
+                                  focus:ring-2 focus:ring-primary-500
+                                  focus:border-transparent transition-all" />
+                    <span asp-validation-for="Name"
+                          class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <div>
+                    <label asp-for="Description"
+                           class="block text-sm font-medium text-gray-700 mb-1.5">
+                        Description
+                    </label>
+                    <textarea asp-for="Description" rows="4"
+                              placeholder="Describe your product..."
+                              class="w-full px-4 py-2.5 border border-gray-200
+                                     rounded-xl text-sm focus:outline-none
+                                     focus:ring-2 focus:ring-primary-500
+                                     focus:border-transparent transition-all
+                                     resize-none"></textarea>
+                    <span asp-validation-for="Description"
+                          class="text-xs text-red-500 mt-1"></span>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label asp-for="CategoryId"
+                               class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Category
+                        </label>
+                        <select asp-for="CategoryId"
+                                asp-items="Model.Categories"
+                                class="w-full px-4 py-2.5 border border-gray-200
+                                       rounded-xl text-sm focus:outline-none
+                                       focus:ring-2 focus:ring-primary-500
+                                       focus:border-transparent transition-all
+                                       bg-white">
+                            <option value="">Select category...</option>
+                        </select>
+                        <span asp-validation-for="CategoryId"
+                              class="text-xs text-red-500 mt-1"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="BasePrice"
+                               class="block text-sm font-medium text-gray-700 mb-1.5">
+                            Base price ($)
+                        </label>
+                        <input asp-for="BasePrice" type="number"
+                               step="0.01" placeholder="0.00"
+                               class="w-full px-4 py-2.5 border border-gray-200
+                                      rounded-xl text-sm focus:outline-none
+                                      focus:ring-2 focus:ring-primary-500
+                                      focus:border-transparent transition-all" />
+                        <span asp-validation-for="BasePrice"
+                              class="text-xs text-red-500 mt-1"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Variations -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6"
+             x-data="variationsManager()">
+
+            <div class="flex items-center justify-between mb-5">
+                <div>
+                    <h2 class="font-bold text-gray-900">Variations</h2>
+                    <p class="text-xs text-gray-500 mt-0.5">
+                        Add color/size variations with different prices and stock
+                    </p>
+                </div>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="checkbox" asp-for="HasVariations"
+                           x-model="hasVariations"
+                           class="w-4 h-4 text-primary-600 rounded
+                                  focus:ring-primary-500" />
+                    <span class="text-sm font-medium text-gray-700">
+                        This product has variations
+                    </span>
+                </label>
+            </div>
+
+            <div x-show="hasVariations" x-transition>
+
+                <!-- Variations list -->
+                <div class="space-y-3 mb-4">
+                    <template x-for="(v, idx) in variations" :key="idx">
+                        <div class="border border-gray-200 rounded-xl p-4"
+                             x-show="!v.shouldDelete">
+                            <div class="grid grid-cols-6 gap-3">
+                                <div class="col-span-2">
+                                    <label class="text-xs text-gray-500 mb-1
+                                                  block">Name</label>
+                                    <input x-model="v.name"
+                                           placeholder="e.g. Black / XL"
+                                           class="w-full px-3 py-2 border
+                                                  border-gray-200 rounded-lg
+                                                  text-sm focus:outline-none
+                                                  focus:ring-1
+                                                  focus:ring-primary-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1
+                                                  block">Color</label>
+                                    <input x-model="v.color"
+                                           placeholder="Black"
+                                           class="w-full px-3 py-2 border
+                                                  border-gray-200 rounded-lg
+                                                  text-sm focus:outline-none
+                                                  focus:ring-1
+                                                  focus:ring-primary-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1
+                                                  block">Size</label>
+                                    <input x-model="v.size"
+                                           placeholder="XL"
+                                           class="w-full px-3 py-2 border
+                                                  border-gray-200 rounded-lg
+                                                  text-sm focus:outline-none
+                                                  focus:ring-1
+                                                  focus:ring-primary-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1
+                                                  block">Price ($)</label>
+                                    <input x-model="v.price" type="number"
+                                           step="0.01"
+                                           class="w-full px-3 py-2 border
+                                                  border-gray-200 rounded-lg
+                                                  text-sm focus:outline-none
+                                                  focus:ring-1
+                                                  focus:ring-primary-500" />
+                                </div>
+                                <div>
+                                    <label class="text-xs text-gray-500 mb-1
+                                                  block">Stock</label>
+                                    <div class="flex items-center gap-2">
+                                        <input x-model="v.stockQuantity"
+                                               type="number"
+                                               class="w-full px-3 py-2 border
+                                                      border-gray-200 rounded-lg
+                                                      text-sm focus:outline-none
+                                                      focus:ring-1
+                                                      focus:ring-primary-500" />
+                                        <button type="button"
+                                                @@click="removeVariation(idx)"
+                                                class="p-2 text-red-400
+                                                       hover:text-red-600
+                                                       hover:bg-red-50
+                                                       rounded-lg transition-colors">
+                                            <svg class="w-4 h-4" fill="none"
+                                                 stroke="currentColor"
+                                                 viewBox="0 0 24 24">
+                                                <path stroke-linecap="round"
+                                                      stroke-linejoin="round"
+                                                      stroke-width="2"
+                                                      d="M6 18L18 6M6 6l12 12" />
+                                            </svg>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- SKU -->
+                            <div class="mt-2">
+                                <input x-model="v.sku"
+                                       placeholder="SKU (optional)"
+                                       class="w-full px-3 py-1.5 border
+                                              border-gray-100 rounded-lg
+                                              text-xs text-gray-500
+                                              focus:outline-none
+                                              focus:ring-1
+                                              focus:ring-primary-500 bg-gray-50" />
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Add variation button -->
+                <button type="button" @@click="addVariation()"
+                        class="flex items-center gap-2 text-sm text-primary-600
+                               hover:text-primary-700 font-medium">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add variation
+                </button>
+            </div>
+
+            <!-- Hidden field — variations as JSON -->
+            <input type="hidden" asp-for="VariationsJson"
+                   :value="JSON.stringify(variations)" />
+        </div>
+
+        <!-- Images -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 class="font-bold text-gray-900 mb-5">Product images</h2>
+
+            <!-- Existing images (edit mode) -->
+            @if (Model.ExistingImages.Any())
+            {
+                <div class="flex flex-wrap gap-3 mb-4">
+                    @foreach (var img in Model.ExistingImages)
+                    {
+                        <div class="relative">
+                            <img src="@img.ImageUrl"
+                                 class="w-20 h-20 rounded-xl object-cover
+                                                border border-gray-200" />
+                            @if (img.IsMain)
+                            {
+                                <span class="absolute -top-1 -right-1 text-xs
+                                                         bg-primary-600 text-white px-1.5
+                                                         py-0.5 rounded-full">
+                                    Main
+                                </span>
+                            }
+                        </div>
+                    }
+                </div>
+            }
+
+            <!-- File upload -->
+            <div class="border-2 border-dashed border-gray-200 rounded-xl
+                        p-8 text-center hover:border-primary-300
+                        transition-colors">
+                <svg class="w-10 h-10 text-gray-300 mx-auto mb-3"
+                     fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="1"
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                <p class="text-sm text-gray-500 mb-2">
+                    Click to upload or drag and drop
+                </p>
+                <p class="text-xs text-gray-400">
+                    PNG, JPG, WebP up to 5MB each
+                </p>
+                <input type="file" name="NewImages" multiple accept="image/*"
+                       class="mt-3 text-sm text-gray-500 file:mr-3 file:py-2
+                              file:px-4 file:rounded-xl file:border-0
+                              file:text-sm file:font-medium file:bg-primary-50
+                              file:text-primary-700 hover:file:bg-primary-100
+                              cursor-pointer" />
+            </div>
+        </div>
+
+        <!-- SEO (optional) -->
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+            <h2 class="font-bold text-gray-900 mb-1">SEO (optional)</h2>
+            <p class="text-xs text-gray-500 mb-4">
+                Help customers find your product on Google
+            </p>
+            <div class="space-y-3">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        Meta title
+                    </label>
+                    <input asp-for="MetaTitle"
+                           placeholder="Product title for search engines"
+                           class="w-full px-4 py-2.5 border border-gray-200
+                                  rounded-xl text-sm focus:outline-none
+                                  focus:ring-2 focus:ring-primary-500
+                                  focus:border-transparent transition-all" />
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1.5">
+                        Meta description
+                    </label>
+                    <textarea asp-for="MetaDescription" rows="2"
+                              placeholder="Brief description for search engines..."
+                              class="w-full px-4 py-2.5 border border-gray-200
+                                     rounded-xl text-sm focus:outline-none
+                                     focus:ring-2 focus:ring-primary-500
+                                     focus:border-transparent transition-all
+                                     resize-none"></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit -->
+        <div class="flex items-center justify-between">
+            <a href="/vendor/products"
+               class="text-sm text-gray-500 hover:text-gray-700 transition-colors">
+                Cancel
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center gap-2 bg-primary-600
+                           hover:bg-primary-700 text-white font-semibold
+                           px-8 py-3 rounded-xl transition-all shadow-lg
+                           hover:-translate-y-0.5">
+                @(Model.IsEdit ? "Save changes" : "Submit for approval")
+            </button>
+        </div>
+
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function variationsManager() {
+            return {
+                hasVariations: @Model.HasVariations.ToString().ToLower(),
+                variations: @Html.Raw(
+                                    string.IsNullOrEmpty(Model.VariationsJson)
+                                    || Model.VariationsJson == "[]"
+                                    ? "[]"
+                                    : Model.VariationsJson),
+
+            addVariation() {
+                this.variations.push({
+                    id:            0,
+                    name:          '',
+                    sku:           '',
+                    price:         0,
+                    stockQuantity: 0,
+                    color:         '',
+                    size:          '',
+                    shouldDelete:  false
+                });
+            },
+
+                removeVariation(idx) {
+                    /*
+                        If variation has an id (existing in DB)
+                        mark it for deletion — don't remove from array.
+                        If new (id = 0) — remove immediately.
+                    */
+                    if (this.variations[idx].id > 0) {
+                        this.variations[idx].shouldDelete = true;
+                    } else {
+                        this.variations.splice(idx, 1);
+                    }
+                }
+            }
+        }
+    </script>
+}
+

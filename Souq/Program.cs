@@ -45,9 +45,11 @@ builder.Services.AddScoped<ICartRepository, CartRepository>();
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<IDepartmentRepository, DepartmentRepository>();
 builder.Services.AddScoped<IVariationRepository, VariationRepository>();
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add services to the container.
 
@@ -539,6 +541,35 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapControllerRoute(
+    name: "vendorDashboard",
+    pattern: "vendor/dashboard",
+    defaults: new { controller = "Vendor", action = "Dashboard" });
+
+app.MapControllerRoute(
+    name: "vendorProducts",
+    pattern: "vendor/products",
+    defaults: new { controller = "Vendor", action = "Products" });
+
+app.MapControllerRoute(
+    name: "vendorCreateProduct",
+    pattern: "vendor/products/create",
+    defaults: new { controller = "Vendor", action = "CreateProduct" });
+
+app.MapControllerRoute(
+    name: "vendorSaveProduct",
+    pattern: "vendor/products/save",
+    defaults: new { controller = "Vendor", action = "SaveProduct" });
+
+app.MapControllerRoute(
+    name: "vendorEditProduct",
+    pattern: "vendor/products/edit/{id}",
+    defaults: new { controller = "Vendor", action = "EditProduct" });
+
+app.MapControllerRoute(
+    name: "vendorDeleteProduct",
+    pattern: "vendor/products/delete",
+    defaults: new { controller = "Vendor", action = "DeleteProduct" });
 app.MapControllerRoute(
     name: "productSearch",
     pattern: "products/search",
