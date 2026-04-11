@@ -12,6 +12,8 @@ namespace Souq.UnitOfWork
         IDepartmentRepository Departments { get; }
         IVariationRepository Variations { get; }
         ICategoryRepository Categories { get; }
+        IReviewRepository Reviews { get; }
+        IProductImageRepository ProductImages { get; }
         Task<int> SaveAsync();
     }
 }

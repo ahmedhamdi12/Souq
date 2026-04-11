@@ -175,11 +175,50 @@ namespace Souq.Services.Implementations
         }
         public async Task<bool> DeleteProductsAsync(int productId, int vendorId)
         {
-            var product = await _uow.Products.GetByIdAsync(productId);
+            var product = await _uow.Products.GetProductWithDetailsAsync(productId);
             if (product == null || product.VendorId != vendorId)
                 return false;
 
+            var hasOrders = await _uow.Variations.HasOrderItemsAsync(productId);
+
+            if (hasOrders)
+            {
+                product.IsActive = false;
+                product.IsApproved = false;
+                _uow.Products.Update(product);
+                await _uow.SaveAsync();
+                return true;
+            }
+
+            // 1. Remove cart items for all variations
+            foreach (var variation in product.Variations)
+            {
+                var cartItems = await _uow.Cart
+                    .FindAsync(c => c.VariationId == variation.Id);
+
+                foreach (var cartItem in cartItems)
+                    _uow.Cart.Remove(cartItem);
+            }
+
+            // 2. Remove reviews
+            var reviews = await _uow.Reviews
+                .FindAsync(r => r.ProductId == productId);
+
+            foreach (var review in reviews)
+                _uow.Reviews.Remove(review);
+
+            // 3. Remove variations
+            foreach (var variation in product.Variations)
+                _uow.Variations.Remove(variation);
+
+            // 4. Remove images
+            foreach (var image in product.Images)
+                _uow.ProductImages.Remove(image);
+
+            // 5. Remove the product itself
             _uow.Products.Remove(product);
+
+            
             await _uow.SaveAsync();
             return true;
         }
