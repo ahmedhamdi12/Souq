@@ -545,6 +545,10 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 app.MapControllerRoute(
+    name: "vendorApply",
+    pattern: "vendor/apply",
+    defaults: new { controller = "VendorApplication", action = "Apply" });
+app.MapControllerRoute(
     name: "adminVendors",
     pattern: "admin/vendors",
     defaults: new { controller = "Admin", action = "Vendors" });

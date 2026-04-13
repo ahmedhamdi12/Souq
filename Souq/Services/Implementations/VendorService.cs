@@ -436,5 +436,39 @@ namespace Souq.Services.Implementations
 
             return urls;
         }
+
+        public async Task<bool> HasExistingApplicationAsync(string userId)
+        {
+            var existing = await _uow.Vendors.GetByUserIdAsync(userId);
+            return existing != null;
+        }
+
+        public async Task<bool> ApplyAsVendorAsync(VendorApplicationViewModel model, string userId)
+        {
+            var existing = await _uow.Vendors.GetByUserIdAsync(userId);
+            if (existing != null) return false;
+
+            var slug = model.StoreName.ToLower()
+            .Replace(" ", "-")
+            .Replace("'", "")
+            .Replace("\"", "")
+            .Replace(".", "")
+            .Replace(",", "")
+            + "-" + Guid.NewGuid().ToString("N")[..6];
+
+            var vendorProfile = new VendorProfile
+            {
+                UserId = userId,
+                StoreName = model.StoreName,
+                StoreSlug = slug,
+                Description = model.Description,
+                Status = Souq.Models.Enums.VendorStatus.Pending,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _uow.Vendors.AddAsync(vendorProfile);
+            await _uow.SaveAsync();
+            return true;
+        }
     }
 }

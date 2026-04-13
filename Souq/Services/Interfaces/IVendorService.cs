@@ -10,5 +10,8 @@ namespace Souq.Services.Interfaces
         Task<ProductFormViewModel> GetProductsFormAsync(int? productId, int vendorId);
         Task<bool> SaveProductsAsync(ProductFormViewModel model, int vendorId, IWebHostEnvironment env);
         Task<bool> DeleteProductsAsync(int productId, int vendorId);
+        Task<bool> HasExistingApplicationAsync(string userId);
+        Task<bool> ApplyAsVendorAsync(
+            VendorApplicationViewModel model, string userId);
     }
 }

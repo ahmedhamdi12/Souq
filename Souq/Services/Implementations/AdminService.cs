@@ -120,12 +120,36 @@ namespace Souq.Services.Implementations
 
         public async Task<bool> ApproveVendorAsync(int vendorId)
         {
-            var vendor = await _uow.Vendors.GetByIdAsync(vendorId);
+            var vendor = await _uow.Vendors.GetByUserIdAsync(
+                        (await _uow.Vendors.GetByIdAsync(vendorId))?.UserId ?? "");
+
             if (vendor == null) return false;
 
+            // Update vendor status
             vendor.Status = VendorStatus.Approved;
             _uow.Vendors.Update(vendor);
             await _uow.SaveAsync();
+
+            /*
+            Change user role from Customer → Vendor.
+            This gives them access to /vendor/dashboard
+            and all vendor-only pages.
+            */
+            var user = await _userManager.FindByIdAsync(vendor.UserId);
+            if (user != null)
+            {
+                var isCustomer = await _userManager
+                    .IsInRoleAsync(user, "Customer");
+
+                if (isCustomer)
+                    await _userManager.RemoveFromRoleAsync(user, "Customer");
+
+                var isVendor = await _userManager
+                    .IsInRoleAsync(user, "Vendor");
+
+                if (!isVendor)
+                    await _userManager.AddToRoleAsync(user, "Vendor");
+            }
             return true;
         }
 
