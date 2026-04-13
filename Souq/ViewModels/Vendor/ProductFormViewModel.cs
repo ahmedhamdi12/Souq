@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Souq.ViewModels.Vendor
@@ -76,10 +77,15 @@ namespace Souq.ViewModels.Vendor
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public string SKU { get; set; } = string.Empty;
-        public decimal Price { get; set; }
-        public int StockQuantity { get; set; }
+        
+        public string Price { get; set; } = "0";
+
+        
+        public string StockQuantity { get; set; } = "0";
         public string? Color { get; set; }
         public string? Size { get; set; }
         public bool ShouldDelete { get; set; }
+
+        
     }
 }

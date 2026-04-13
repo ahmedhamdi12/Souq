@@ -113,13 +113,14 @@ namespace Souq.Services.Implementations
                 MetaTitle = product.MetaTitle,
                 MetaDescription = product.MetaDescription,
                 Categories = allCategories,
-                VariationsJson = JsonSerializer.Serialize(product.Variations.Select(v => new VariationFormItem
+                VariationsJson = JsonSerializer.Serialize(
+                product.Variations.Select(v => new VariationFormItem
                 {
                     Id = v.Id,
                     Name = v.Name,
                     SKU = v.SKU,
-                    Price = v.Price,
-                    StockQuantity = v.StockQuantity,
+                    Price = v.Price.ToString(),         
+                    StockQuantity = v.StockQuantity.ToString(), 
                     Color = v.Color,
                     Size = v.Size
                 })),
@@ -362,15 +363,17 @@ namespace Souq.Services.Implementations
                         Id = v.Id,
                         Name = v.Name,
                         SKU = v.SKU,
-                        Price = v.Price,
-                        StockQuantity = v.StockQuantity,
+                        Price = decimal.TryParse(v.Price, out var price) ? price : 0,         
+                        StockQuantity = int.TryParse(v.StockQuantity, out var stock) ? stock : 0,
                         Color = v.Color,
                         Size = v.Size,
                         IsActive = true
                     }).ToList();
             }
-            catch
+            catch(Exception ex)
             {
+                System.Diagnostics.Debug.WriteLine(
+            $"ParseVariations error: {ex.Message}");
                 return new List<ProductVariation>();
             }
         }

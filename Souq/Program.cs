@@ -52,6 +52,7 @@ builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add services to the container.
 
@@ -543,6 +544,20 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapControllerRoute(
+    name: "adminVendors",
+    pattern: "admin/vendors",
+    defaults: new { controller = "Admin", action = "Vendors" });
+
+app.MapControllerRoute(
+    name: "adminProducts",
+    pattern: "admin/products",
+    defaults: new { controller = "Admin", action = "Products" });
+
+app.MapControllerRoute(
+    name: "admin",
+    pattern: "admin",
+    defaults: new { controller = "Admin", action = "Index" });
 app.MapControllerRoute(
     name: "vendorDashboard",
     pattern: "vendor/dashboard",

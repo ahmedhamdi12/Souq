@@ -1,0 +1,118 @@
+﻿@model List<Souq.ViewModels.Admin.AdminVendorViewModel>
+@{
+    ViewData["Title"] = "Manage Vendors";
+}
+
+<div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Vendors</h1>
+        <p class="text-gray-500 text-sm mt-1">
+            @Model.Count vendor@(Model.Count != 1 ? "s" : "") registered
+        </p>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="mb-6 p-4 bg-green-50 border border-green-100
+                        rounded-xl text-sm text-green-700">
+            @TempData["Success"]
+        </div>
+    }
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-sm
+                overflow-hidden">
+
+        <div class="grid grid-cols-12 gap-4 px-6 py-3 bg-gray-50
+                    border-b border-gray-100 text-xs font-medium
+                    text-gray-500 uppercase tracking-wide">
+            <div class="col-span-4">Vendor</div>
+            <div class="col-span-2">Owner</div>
+            <div class="col-span-2">Products</div>
+            <div class="col-span-2">Status</div>
+            <div class="col-span-2">Actions</div>
+        </div>
+
+        @foreach (var vendor in Model)
+        {
+            <div class="grid grid-cols-12 gap-4 px-6 py-4 border-b
+                            border-gray-50 items-center last:border-0">
+
+                <div class="col-span-4">
+                    <p class="font-medium text-gray-900 text-sm">
+                        @vendor.StoreName
+                    </p>
+                    <p class="text-xs text-gray-400 mt-0.5">
+                        Joined @vendor.CreatedAt.ToString("MMM dd, yyyy")
+                    </p>
+                </div>
+
+                <div class="col-span-2">
+                    <p class="text-sm text-gray-700">@vendor.OwnerName</p>
+                    <p class="text-xs text-gray-400">@vendor.OwnerEmail</p>
+                </div>
+
+                <div class="col-span-2">
+                    <p class="text-sm text-gray-700">
+                        @vendor.ProductCount products
+                    </p>
+                    <p class="text-xs text-green-600">
+                        $@vendor.TotalEarnings.ToString("0.00") earned
+                    </p>
+                </div>
+
+                <div class="col-span-2">
+                    <span class="text-xs font-medium px-2.5 py-1
+                                     rounded-full @vendor.StatusColor">
+                        @vendor.Status
+                    </span>
+                </div>
+
+                <div class="col-span-2 flex items-center gap-2">
+                    @if (vendor.Status == Souq.Models.Enums.VendorStatus.Pending)
+                    {
+                        <form asp-controller="Admin"
+                              asp-action="ApproveVendor" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="vendorId"
+                                   value="@vendor.Id" />
+                            <button type="submit"
+                                    class="text-xs bg-green-600 hover:bg-green-700
+                                                   text-white font-medium px-3 py-1.5
+                                                   rounded-lg transition-colors">
+                                Approve
+                            </button>
+                        </form>
+                        <form asp-controller="Admin"
+                              asp-action="RejectVendor" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="vendorId"
+                                   value="@vendor.Id" />
+                            <button type="submit"
+                                    class="text-xs bg-red-100 hover:bg-red-200
+                                                   text-red-700 font-medium px-3 py-1.5
+                                                   rounded-lg transition-colors">
+                                Reject
+                            </button>
+                        </form>
+                    }
+                    else if (vendor.Status == Souq.Models.Enums.VendorStatus.Approved)
+                    {
+                        <span class="text-xs text-green-600 font-medium">
+                            Active
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-xs text-gray-400">
+                            @vendor.Status
+                        </span>
+                    }
+                </div>
+            </div>
+        }
+
+        </div>
+
+</div>
+
