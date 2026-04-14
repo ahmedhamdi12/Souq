@@ -59,10 +59,12 @@ namespace Souq.Controllers
             var order = await _orderService
                 .CreateOrderAsync(model, userId);
 
+
             var successUrl = Url.Action("Success", "Checkout",
                 null, Request.Scheme)!;
             var cancelUrl = Url.Action("Cancel", "Checkout",
                 null, Request.Scheme)!;
+
 
             var stripeUrl = await _orderService
                 .CreateStripeSessionAsync(order, successUrl, cancelUrl);

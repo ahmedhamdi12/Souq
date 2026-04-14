@@ -11,11 +11,13 @@ namespace Souq.Services.Implementations
     {
         private readonly IUnitOfWork _uow;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public AdminService(IUnitOfWork uow, UserManager<ApplicationUser> userManager)
+        public AdminService(IUnitOfWork uow, UserManager<ApplicationUser> userManager, IEmailService emailService)
         {
             _uow = uow;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         public async Task<AdminDashboardViewModel> GetDashboardAsync()
@@ -150,6 +152,18 @@ namespace Souq.Services.Implementations
                 if (!isVendor)
                     await _userManager.AddToRoleAsync(user, "Vendor");
             }
+
+            try
+            {
+                if (user?.Email != null)
+                    await _emailService.SendVendorApprovedAsync(
+                        user.Email, vendor.StoreName);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Email failed: {ex.Message}");
+            }
             return true;
         }
 
@@ -161,6 +175,19 @@ namespace Souq.Services.Implementations
             vendor.Status = VendorStatus.Rejected;
             _uow.Vendors.Update(vendor);
             await _uow.SaveAsync();
+
+            try
+            {
+                var user = await _userManager.FindByIdAsync(vendor.UserId);
+                if (user?.Email != null)
+                    await _emailService.SendVendorRejectedAsync(
+                        user.Email, vendor.StoreName);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine(
+                    $"Email failed: {ex.Message}");
+            }
             return true;
         }
 

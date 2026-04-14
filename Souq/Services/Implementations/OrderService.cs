@@ -1,4 +1,4 @@
-﻿using Stripe;
+using Stripe;
 using Stripe.Checkout;
 using Souq.Models;
 using Souq.Models.Enums;
@@ -8,6 +8,7 @@ using Souq.ViewModels.Checkout;
 using Microsoft.Extensions.Configuration;
 using Stripe;
 using Souq.ViewModels.Orders;
+using Microsoft.AspNetCore.Identity;
 
 namespace Souq.Services.Implementations
 {
@@ -16,15 +17,22 @@ namespace Souq.Services.Implementations
         private readonly IUnitOfWork _uow;
         private readonly ICartService _cartService;
         private readonly IConfiguration _config;
+        private readonly IEmailService _emailService;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public OrderService(IUnitOfWork uow,
                            ICartService cartService,
-                           IConfiguration config)
+                           IConfiguration config,
+                           IEmailService emailService,
+                           UserManager<ApplicationUser> userManager)
         {
             _uow = uow;
             _cartService = cartService;
             _config = config;
+            _emailService = emailService;
+            _userManager = userManager;
         }
+
 
         // ── Create Order ─────────────────────────────────────
         public async Task<Order> CreateOrderAsync(
@@ -130,7 +138,14 @@ namespace Souq.Services.Implementations
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = $"{item.ProductName} — {item.VariationName}",
+                            /*
+                                Stripe requires fully-qualified absolute URLs
+                                for product images (https://...).
+                                Our DB stores relative paths like /uploads/...,
+                                so we skip images that aren't valid absolute URLs.
+                            */
                             Images = item.ImageUrl != null
+                                      && Uri.IsWellFormedUriString(item.ImageUrl, UriKind.Absolute)
                                 ? new List<string> { item.ImageUrl }
                                 : null
                         }
@@ -230,6 +245,65 @@ namespace Souq.Services.Implementations
 
                 // Clear the user's cart after successful payment
                 await _cartService.ClearCartAsync(order.UserId);
+
+                /*
+                    Send confirmation email to customer.
+                    We wrap in try-catch so email failure
+                    never breaks the payment flow.
+                */
+                try
+                {
+                    var customer = await _userManager.FindByIdAsync(order.UserId);
+                    if (customer == null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Webhook] Email Failed: User with ID {order.UserId} not found.");
+                    }
+                    else if (customer.Email != null)
+                    {
+                        await _emailService.SendOrderConfirmedAsync(
+                            toEmail: customer.Email,
+                            customerName: customer.FirstName,
+                            orderNumber: order.OrderNumber,
+                            total: order.Total,
+                            city: order.ShippingCity,
+                            country: order.ShippingCountry);
+
+                        System.Diagnostics.Debug.WriteLine($"[Webhook] Confirmation email sent to {customer.Email}");
+                    }
+
+                    // Send new sale emails to vendors
+                    var fullOrder = await _uow.Orders.GetOrderWithItemsAsync(order.Id);
+                    if (fullOrder != null)
+                    {
+                        var vendorGroups = fullOrder.OrderItems.GroupBy(i => i.VendorId);
+                        foreach (var group in vendorGroups)
+                        {
+                            var vendor = await _uow.Vendors.GetByIdAsync(group.Key);
+                            if (vendor?.User?.Email != null)
+                            {
+                                var earnings = group.Sum(i => i.VendorEarnings);
+                                var itemNames = group.Select(i => $"{i.ProductName} x{i.Quantity}").ToList();
+
+                                await _emailService.SendNewSaleAsync(
+                                    toEmail: vendor.User.Email,
+                                    vendorStoreName: vendor.StoreName,
+                                    orderNumber: order.OrderNumber,
+                                    vendorEarnings: earnings,
+                                    itemNames: itemNames);
+
+                                System.Diagnostics.Debug.WriteLine($"[Webhook] Vendor sale email sent to {vendor.User.Email}");
+                            }
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine($"[Webhook] EMAIL ERROR: {ex.Message}");
+                    if (ex.InnerException != null)
+                    {
+                        System.Diagnostics.Debug.WriteLine($"[Webhook] INNER ERROR: {ex.InnerException.Message}");
+                    }
+                }
             }
         }
 
@@ -342,17 +416,17 @@ namespace Souq.Services.Implementations
             var hasItems = order.OrderItems.Any(i => i.VendorId == vendorId);
             if (!hasItems) return false;
 
-                    /*
-                Only allow valid transitions:
-                Paid → Processing
-                Processing → Shipped
-                Shipped → Delivered
-                Vendor cannot cancel after Shipped.
-            */
-             var validTransitions = GetValidTransitions(order.Status);
+            /*
+        Only allow valid transitions:
+        Paid → Processing
+        Processing → Shipped
+        Shipped → Delivered
+        Vendor cannot cancel after Shipped.
+    */
+            var validTransitions = GetValidTransitions(order.Status);
             if (!validTransitions.Contains(newStatus))
                 return false;
-            
+
             order.Status = newStatus;
             await _uow.SaveAsync();
             return true;
@@ -454,5 +528,5 @@ namespace Souq.Services.Implementations
                 _ => new List<Souq.Models.Enums.OrderStatus>()
             };
         }
-        }
+    }
 }
