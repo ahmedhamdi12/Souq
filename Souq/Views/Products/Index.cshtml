@@ -1,6 +1,14 @@
 ﻿@model Souq.ViewModels.Products.ProductsListViewModel
 @{
     ViewData["Title"] = Model.PageTitle;
+
+    ViewData["MetaDescription"] = !string.IsNullOrEmpty(Model.SearchQuery)
+        ? $"Search results for '{Model.SearchQuery}' — {Model.TotalProducts} products found on Souq"
+        : $"Shop {Model.PageTitle} on Souq — {Model.TotalProducts} products from independent vendors";
+
+    ViewData["CanonicalUrl"] = !string.IsNullOrEmpty(Model.DepartmentSlug)
+        ? $"https://souq.com/products/department/{Model.DepartmentSlug}"
+        : "https://souq.com/products";
 }
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">

@@ -4,6 +4,53 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - Souq</title>
+    <meta name="description"
+          content="@(ViewData["MetaDescription"]
+                        ?? "Souq — Multi-vendor marketplace. Shop from hundreds of independent vendors. Find unique products at great prices.")" />
+
+    <meta name="keywords"
+          content="@(ViewData["MetaKeywords"]
+                        ?? "online shopping, marketplace, vendors, products")" />
+    <!-- Open Graph — for social media sharing previews -->
+    <meta property="og:title"
+          content="@(ViewData["OgTitle"] ?? ViewData["Title"] + " - Souq")" />
+
+    <meta property="og:description"
+          content="@(ViewData["OgDescription"]
+                        ?? ViewData["MetaDescription"]
+                        ?? "Shop from hundreds of independent vendors on Souq.")" />
+
+    <meta property="og:type"
+          content="@(ViewData["OgType"] ?? "website")" />
+
+    <meta property="og:url"
+          content="@(ViewData["OgUrl"] ?? "https://souq.com")" />
+
+    @if (ViewData["OgImage"] != null)
+    {
+        <meta property="og:image" content="@ViewData["OgImage"]" />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+    }
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title"
+          content="@(ViewData["OgTitle"] ?? ViewData["Title"] + " - Souq")" />
+    <meta name="twitter:description"
+          content="@(ViewData["OgDescription"]
+                        ?? "Shop from hundreds of independent vendors on Souq.")" />
+
+    @if (ViewData["OgImage"] != null)
+    {
+        <meta name="twitter:image" content="@ViewData["OgImage"]" />
+    }
+
+    <!-- Canonical URL — prevents duplicate content issues -->
+    @if (ViewData["CanonicalUrl"] != null)
+    {
+        <link rel="canonical" href="@ViewData["CanonicalUrl"]" />
+    }
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>

@@ -1,6 +1,24 @@
 ﻿@model Souq.ViewModels.Products.ProductDetailViewModel
 @{
     ViewData["Title"] = Model.Product.MetaTitle ?? Model.Product.Name;
+
+    ViewData["MetaDescription"] = Model.Product.MetaDescription
+        ?? Model.Product.Description?.Substring(0,
+            Math.Min(160, Model.Product.Description?.Length ?? 0));
+
+    ViewData["OgTitle"] = Model.Product.Name + " | Souq";
+    ViewData["OgDescription"] = Model.Product.MetaDescription
+        ?? Model.Product.Description?.Substring(0,
+            Math.Min(160, Model.Product.Description?.Length ?? 0));
+
+    ViewData["OgType"] = "product";
+    ViewData["OgImage"] = Model.AllImages.FirstOrDefault();
+    ViewData["CanonicalUrl"] = $"https://souq.com/products/{Model.Product.Slug}";
+
+    ViewData["MetaKeywords"] = $"{Model.Product.Name}, "
+        + $"{Model.Product.Category.Name}, "
+        + $"{Model.Product.Category.Department.Name}, "
+        + "buy online, Souq";
 }
 
 @* SEO Meta Tags *@
