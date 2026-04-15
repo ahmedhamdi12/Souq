@@ -121,6 +121,39 @@
                     </form>
                 </div>
 
+                <!-- Mobile menu button — shows on small screens only -->
+                <div class="flex md:hidden items-center gap-2">
+
+                    <!-- Cart badge (mobile) -->
+                    <a href="/cart"
+                       class="relative p-2 text-gray-600 hover:text-primary-600
+              rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2"
+                                  d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                        </svg>
+                        <span id="cart-count-mobile"
+                              class="absolute -top-1 -right-1 w-4 h-4 bg-accent-500
+                     text-white text-xs rounded-full flex items-center
+                     justify-center font-medium hidden">
+                            0
+                        </span>
+                    </a>
+
+                    <!-- Hamburger button -->
+                    <button x-data
+                            @@click="$dispatch('toggle-mobile-menu')"
+                            class="p-2 text-gray-600 hover:text-primary-600
+                   rounded-lg transition-colors">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor"
+                             viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round"
+                                  stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                        </svg>
+                    </button>
+                </div>
                 <!-- Right side -->
                 <div class="flex items-center gap-3">
 
@@ -221,6 +254,96 @@
             </div>
         </div>
     </nav>
+    <!-- Mobile menu panel -->
+    <div x-data="{ open: false }"
+         x-on:toggle-mobile-menu.window="open = !open"
+         x-show="open"
+         x-transition
+         class="md:hidden bg-white border-b border-gray-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 py-4 space-y-3">
+
+            <!-- Mobile search -->
+            <form action="/products/search" method="get">
+                <div class="relative">
+                    <input type="text" name="q"
+                           placeholder="Search products..."
+                           class="w-full pl-10 pr-4 py-2.5 border
+                              border-gray-200 rounded-xl text-sm
+                              focus:outline-none focus:ring-2
+                              focus:ring-primary-500 bg-gray-50" />
+                    <svg class="absolute left-3 top-3 w-4 h-4 text-gray-400"
+                         fill="none" stroke="currentColor"
+                         viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round"
+                              stroke-width="2"
+                              d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
+                    </svg>
+                </div>
+            </form>
+
+            <!-- Mobile nav links -->
+            <div class="space-y-1">
+                <a href="/products"
+                   class="block px-3 py-2 rounded-lg text-sm
+                      text-gray-700 hover:bg-gray-50">
+                    All products
+                </a>
+
+                @if (User.Identity!.IsAuthenticated)
+                {
+                    <a href="/orders"
+                       class="block px-3 py-2 rounded-lg text-sm
+                              text-gray-700 hover:bg-gray-50">
+                        My orders
+                    </a>
+
+                    @if (User.IsInRole("Vendor"))
+                    {
+                        <a href="/vendor/dashboard"
+                           class="block px-3 py-2 rounded-lg text-sm
+                                      text-gray-700 hover:bg-gray-50">
+                            Vendor dashboard
+                        </a>
+                    }
+
+                    @if (User.IsInRole("Admin"))
+                    {
+                        <a href="/admin"
+                           class="block px-3 py-2 rounded-lg text-sm
+                                      text-gray-700 hover:bg-gray-50">
+                            Admin panel
+                        </a>
+                    }
+
+                    <div class="border-t border-gray-100 pt-2 mt-2">
+                        <form asp-controller="Account"
+                              asp-action="Logout" method="post">
+                            @Html.AntiForgeryToken()
+                            <button type="submit"
+                                    class="block w-full text-left px-3 py-2
+                                           rounded-lg text-sm text-red-600
+                                           hover:bg-red-50">
+                                Sign out
+                            </button>
+                        </form>
+                    </div>
+                }
+                else
+                {
+                    <a href="/account/login"
+                       class="block px-3 py-2 rounded-lg text-sm
+                              text-gray-700 hover:bg-gray-50">
+                        Sign in
+                    </a>
+                    <a href="/account/register"
+                       class="block px-3 py-2 rounded-lg text-sm
+                              bg-primary-600 text-white">
+                        Get started
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
     
         <main class="flex-1">
             @RenderBody()
@@ -263,6 +386,56 @@
         }
 
         loadCartCount();
+    </script>
+
+    <!-- Toast notification container -->
+    <div id="toast-container"
+         class="fixed bottom-5 right-5 z-50 space-y-3 pointer-events-none">
+    </div>
+
+    <script>
+        /*
+            Global toast function — call from anywhere:
+            showToast('Added to cart!', 'success')
+            showToast('Something went wrong', 'error')
+        */
+        function showToast(message, type = 'success') {
+            const colors = {
+                success: 'bg-green-600',
+                error:   'bg-red-600',
+                info:    'bg-blue-600'
+            };
+
+            const toast = document.createElement('div');
+            toast.className = `
+                ${colors[type] ?? colors.success}
+                text-white text-sm font-medium px-5 py-3 rounded-xl
+                shadow-lg flex items-center gap-2 pointer-events-auto
+                translate-y-2 opacity-0 transition-all duration-300
+            `;
+
+            toast.innerHTML = `
+                <svg class="w-4 h-4 shrink-0" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                ${message}
+            `;
+
+            document.getElementById('toast-container').appendChild(toast);
+
+            // Animate in
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            // Remove after 3 seconds
+            setTimeout(() => {
+                toast.classList.add('translate-y-2', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
     </script>
 </body>
 </html>

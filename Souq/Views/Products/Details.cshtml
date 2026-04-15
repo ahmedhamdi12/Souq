@@ -262,24 +262,36 @@
 
                 <!-- Add to cart -->
                 <button @@click="addToCart()"
-                        :disabled="selectedVariationId === 0 || selectedStock === 0"
+                        :disabled="selectedVariationId === 0 || selectedStock === 0 || loading"
                         class="flex-1 flex items-center justify-center gap-2
-                               bg-primary-600 hover:bg-primary-700 disabled:bg-gray-300
-                               disabled:cursor-not-allowed text-white font-semibold
-                               py-3 rounded-xl transition-all shadow-lg
-                               hover:shadow-primary-100 hover:-translate-y-0.5
+                               bg-primary-600 hover:bg-primary-700
+                               disabled:bg-gray-300 disabled:cursor-not-allowed
+                               text-white font-semibold py-3 rounded-xl
+                               transition-all shadow-lg hover:-translate-y-0.5
                                active:translate-y-0">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor"
-                         viewBox="0 0 24 24">
+                    <!-- Loading spinner -->
+                    <svg x-show="loading"
+                         class="w-5 h-5 animate-spin"
+                         fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10"
+                                stroke="currentColor" stroke-width="4" />
+                        <path class="opacity-75" fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+
+                    <svg x-show="!loading" class="w-5 h-5" fill="none"
+                         stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round"
                               stroke-width="2"
-                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
+                              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
                     </svg>
-                    <span x-text="selectedStock === 0
-                        ? 'Out of stock'
-                        : 'Add to cart'">
-                        Add to cart
+
+                    <span x-text="loading ? 'Adding...'
+                                    : selectedVariationId === 0 ? 'Select an option'
+                                    : selectedStock === 0 ? 'Out of stock'
+                                    : 'Add to cart'">
                     </span>
+                    
                 </button>
             </div>
 
@@ -475,6 +487,7 @@
                 selectedStock:       0,
                 qty:                 1,
                 addedToCart:         false,
+                loading:             false,
 
                 /*
                     selectColor is called when user clicks a color button.
@@ -516,6 +529,8 @@
                     if (this.selectedVariationId === 0 || this.selectedStock === 0)
                         return;
 
+                     this.loading = true;
+
                     try {
                         const res = await fetch('/cart/add', {
                             method: 'POST',
@@ -543,13 +558,17 @@
                                 badge.textContent = data.cartCount;
                                 badge.classList.remove('hidden');
                             }
-
+                             showToast('Added to cart successfully!');
                             // Show success message then hide after 2s
                             this.addedToCart = true;
                             setTimeout(() => this.addedToCart = false, 2000);
                         }
                     } catch (err) {
                         console.error('Add to cart failed:', err);
+                    }
+                    finally
+                    {
+                            this.loading = false;  // ← hide spinner always
                     }
                 }
             }
