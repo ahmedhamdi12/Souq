@@ -1,4 +1,5 @@
 ﻿
+using Souq.ViewModels.Store;
 using Souq.ViewModels.Vendor;
 
 namespace Souq.Services.Interfaces
@@ -13,5 +14,7 @@ namespace Souq.Services.Interfaces
         Task<bool> HasExistingApplicationAsync(string userId);
         Task<bool> ApplyAsVendorAsync(
             VendorApplicationViewModel model, string userId);
+
+        Task<StoreViewModel?> GetStoreAsync(string storeSlug);
     }
 }

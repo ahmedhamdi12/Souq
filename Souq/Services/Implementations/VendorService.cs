@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Souq.Models;
 using Souq.Services.Interfaces;
 using Souq.UnitOfWork;
+using Souq.ViewModels.Store;
 using Souq.ViewModels.Vendor;
 
 namespace Souq.Services.Implementations
@@ -469,6 +470,46 @@ namespace Souq.Services.Implementations
             await _uow.Vendors.AddAsync(vendorProfile);
             await _uow.SaveAsync();
             return true;
+        }
+
+        public async Task<StoreViewModel?> GetStoreAsync(string storeSlug)
+        {
+            var vendor = await _uow.Vendors.GetBySlugAsync(storeSlug);
+            if (vendor == null ||
+                vendor.Status != Models.Enums.VendorStatus.Approved)
+                return null;
+
+            var allProducts = await _uow.Products
+        .GetProductsByVendorIdAsync(vendor.Id);
+
+            var approvedProducts = allProducts
+                .Where(p => p.IsApproved && p.IsActive)
+                .ToList();
+
+            var orders = await _uow.Orders.GetOrdersByVendorAsync(vendor.Id);
+
+            var totalSales = orders
+        .SelectMany(o => o.OrderItems
+            .Where(i => i.VendorId == vendor.Id))
+        .Sum(i => i.Quantity);
+
+            // Get all reviews for vendor's products
+         var allReviews = approvedProducts
+                .SelectMany(p => p.Reviews)
+                .ToList();
+            var avgRating = allReviews.Any()
+           ? allReviews.Average(r => r.Rating)
+           : 0;
+
+            return new StoreViewModel
+            {
+                Vendor = vendor,
+                Products = approvedProducts,
+                TotalProducts = approvedProducts.Count,
+                TotalSales = totalSales,
+                AverageRating = Math.Round(avgRating, 1),
+                TotalReviews = allReviews.Count
+            };
         }
     }
 }
