@@ -1,0 +1,88 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Page Not Found";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Souq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { theme: { extend: { colors: {
+            primary: { 50:'#f0f9ff',600:'#0284c7',700:'#0369a1' }
+        }}}}
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap"
+          rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-50 flex items-center
+             justify-center p-4 font-sans">
+    <div class="max-w-lg w-full text-center">
+
+        <!-- 404 number -->
+        <p class="text-8xl font-bold text-primary-600 mb-4">404</p>
+
+        <h1 class="text-2xl font-bold text-gray-900 mb-3">
+            Page not found
+        </h1>
+        <p class="text-gray-500 mb-8">
+            The page you're looking for doesn't exist or
+            has been moved. Let's get you back on track.
+        </p>
+
+        <!-- Search bar -->
+        <form action="/products/search" method="get"
+              class="flex gap-2 mb-8 max-w-sm mx-auto">
+            <input type="text" name="q"
+                   placeholder="Search for products..."
+                   class="flex-1 px-4 py-2.5 border border-gray-200
+                      rounded-xl text-sm focus:outline-none
+                      focus:ring-2 focus:ring-primary-500" />
+            <button type="submit"
+                    class="bg-primary-600 hover:bg-primary-700 text-white
+                       px-4 py-2.5 rounded-xl transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor"
+                     viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0" />
+                </svg>
+            </button>
+        </form>
+
+        <!-- Quick links -->
+        <div class="flex flex-wrap gap-2 justify-center mb-8">
+            @foreach (var link in new[]
+                        {
+                        new { Href = "/", Label = "Home" },
+                        new { Href = "/products", Label = "All products" },
+                        new { Href = "/cart", Label = "Cart" },
+                        new { Href = "/orders", Label = "My orders" },
+                        })
+            {
+                <a href="@link.Href"
+                   class="px-4 py-2 bg-white border border-gray-200
+                          text-gray-600 hover:text-primary-600
+                          hover:border-primary-200 rounded-xl text-sm
+                          transition-colors">
+                    @link.Label
+                </a>
+            }
+        </div>
+
+        <a href="/"
+           class="inline-flex items-center gap-2 bg-primary-600
+              hover:bg-primary-700 text-white font-semibold
+              px-8 py-3 rounded-xl transition-all text-sm">
+            Back to homepage
+        </a>
+    </div>
+</body>
+</html>
