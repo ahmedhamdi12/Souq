@@ -38,6 +38,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.SlidingExpiration = true;
 });
 
+
+
 // Repositories and Unit of Work
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<IVendorRepository, VendorRepository>();
@@ -48,7 +50,8 @@ builder.Services.AddScoped<IVariationRepository, VariationRepository>();
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
 builder.Services.AddScoped<IProductImageRepository, ProductImageRepository>();
-builder.Services.AddScoped<IProductService, ProductService>();
+builder.Services.AddScoped<ProductService>();
+builder.Services.AddScoped<IProductService, CachedProductService>();
 builder.Services.AddScoped<ICartService, CartService>();
 builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
@@ -73,6 +76,13 @@ builder.Services.Configure<CookiePolicyOptions>(options =>
     options.MinimumSameSitePolicy = SameSiteMode.Lax;
 });
 Stripe.StripeConfiguration.ApiKey = builder.Configuration["Stripe:SecretKey"];
+
+// In-memory cache — stores data in server RAM
+builder.Services.AddMemoryCache();
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
+});
 var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
@@ -548,6 +558,7 @@ app.UseStatusCodePagesWithReExecute("/error/{0}");
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+app.UseResponseCompression();
 app.UseCookiePolicy();
 app.UseRouting();
 app.UseAuthentication();
