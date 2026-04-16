@@ -96,6 +96,24 @@ namespace Souq.Controllers
                 System.Text.Json.JsonSerializer.Serialize(
                     viewModel.AllImages);
 
+            /*
+                Calculate CanReview in the controller — not the view.
+                Pass result to view via ViewData.
+                ViewData["CanReview"] = true/false
+            */
+            if (User.Identity!.IsAuthenticated)
+            {
+                var userId = User.FindFirstValue(
+                    System.Security.Claims.ClaimTypes.NameIdentifier)!;
+
+                ViewData["CanReview"] = await _productService
+                    .CanUserReviewAsync(viewModel.Product.Id, userId);
+            }
+            else
+            {
+                ViewData["CanReview"] = false;
+            }
+
             return View(viewModel);
         }
 
