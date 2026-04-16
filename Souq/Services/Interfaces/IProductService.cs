@@ -18,5 +18,7 @@ namespace Souq.Services.Interfaces
         Task<List<Product>> GetRelatedProductsAsync(int categoryId,
                                                      int excludeProductId,
                                                      int count = 4);
+        Task<bool> CanUserReviewAsync(int productId, string userId);
+        Task<bool> AddReviewAsync(ReviewViewModel model, string userId);
     }
 }

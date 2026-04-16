@@ -1,4 +1,5 @@
 ﻿using Souq.Models;
+using Souq.Models.Enums;
 using Souq.Services.Interfaces;
 using Souq.UnitOfWork;
 using Souq.ViewModels.Products;
@@ -12,6 +13,39 @@ namespace Souq.Services.Implementations
         {
             _uow = uow;
         }
+
+        public async Task<bool> AddReviewAsync(ReviewViewModel model, string userId)
+        {
+            var canReview = await CanUserReviewAsync(model.ProductId, userId);
+            if (!canReview) return false;
+
+            var review = new Models.Review
+            {
+                ProductId = model.ProductId,
+                UserId = userId,
+                Rating = model.Rating,
+                Comment = model.Comment,
+                CreatedAt = DateTime.UtcNow
+            };
+            await _uow.Reviews.AddAsync(review);
+            await _uow.SaveAsync();
+            return true;
+        }
+
+        public async Task<bool> CanUserReviewAsync(int productId, string userId)
+        {
+            var orders = await _uow.Orders.GetOrdersByUserAsync(userId);
+            var hasPurchased = orders.
+                Where(o => o.Status == OrderStatus.Delivered)
+                .SelectMany(o => o.OrderItems)
+                .Any(oi => oi.Variation.ProductId == productId);
+            if (!hasPurchased) return false;
+
+            var existingReview = await _uow.Reviews.FindAsync(r => r.ProductId == productId && r.UserId == userId);
+
+            return !existingReview.Any();
+        }
+
         public async Task<List<Department>> GetAllDepartmentsAsync()
         {
             var departments =await _uow.Departments.GetAllAsync();

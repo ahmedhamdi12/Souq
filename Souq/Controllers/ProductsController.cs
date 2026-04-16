@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Security.Claims;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Souq.Services.Interfaces;
+using Souq.ViewModels.Products;
 
 namespace Souq.Controllers
 {
@@ -94,6 +97,32 @@ namespace Souq.Controllers
                     viewModel.AllImages);
 
             return View(viewModel);
+        }
+
+
+        // POST: /products/review
+        [HttpPost]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AddReview(ReviewViewModel model)
+        {
+            if (!ModelState.IsValid)
+                return RedirectToAction("Details",
+                    new { slug = model.ProductSlug });
+
+            var userId = User.FindFirstValue(
+                System.Security.Claims.ClaimTypes.NameIdentifier)!;
+
+            var success = await _productService
+                .AddReviewAsync(model, userId);
+
+            TempData[success ? "ReviewSuccess" : "ReviewError"] =
+                success
+                    ? "Thank you for your review!"
+                    : "You can only review products you have purchased.";
+
+            return RedirectToAction("Details",
+                new { slug = model.ProductSlug });
         }
     }
 }
