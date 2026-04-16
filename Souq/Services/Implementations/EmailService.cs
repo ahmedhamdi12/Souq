@@ -90,6 +90,20 @@ namespace Souq.Services.Implementations
             await SendAsync(toEmail, storeName, subject, html);
         }
 
+        public async Task SendEmailVerificationAsync(string toEmail, string firstName, string verificationUrl)
+        {
+            var subject = "Verify your Souq account";
+            var html = BuildVerificationEmail(firstName, verificationUrl);
+            await SendAsync(toEmail, firstName, subject, html);
+        }
+
+        public async Task SendPasswordResetAsync(string toEmail, string firstName, string resetUrl)
+        {
+            var subject = "Reset your Souq password";
+            var html = BuildPasswordResetEmail(firstName, resetUrl);
+            await SendAsync(toEmail, firstName, subject, html);
+        }
+
         // ── Helper: strip HTML for plain text fallback ────────
         private string HtmlToPlainText(string html)
         {
@@ -430,6 +444,171 @@ namespace Souq.Services.Implementations
 </body>
 </html>";
         }
+
+        private string BuildVerificationEmail(
+            string firstName, string verificationUrl)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<body style='margin:0;padding:0;background:#f9fafb;
+             font-family:Arial,sans-serif'>
+<table width='100%' cellpadding='0' cellspacing='0'>
+<tr><td align='center' style='padding:40px 20px'>
+<table width='600' cellpadding='0' cellspacing='0'
+       style='background:#ffffff;border-radius:16px;
+              overflow:hidden;border:1px solid #e5e7eb'>
+
+    <!-- Header -->
+    <tr>
+        <td style='background:#0284c7;padding:32px;text-align:center'>
+            <h1 style='color:#ffffff;margin:0;font-size:24px'>Souq.</h1>
+        </td>
+    </tr>
+
+    <!-- Body -->
+    <tr>
+        <td style='padding:40px 32px;text-align:center'>
+
+            <div style='width:64px;height:64px;background:#e0f2fe;
+                        border-radius:50%;margin:0 auto 20px;
+                        display:table-cell;vertical-align:middle;
+                        text-align:center'>
+                <span style='font-size:28px'>✉</span>
+            </div>
+
+            <h2 style='color:#111827;font-size:22px;
+                       margin:0 0 12px 0'>
+                Verify your email address
+            </h2>
+
+            <p style='color:#6b7280;font-size:14px;
+                      margin:0 0 8px 0;line-height:1.6'>
+                Hi {firstName}, welcome to Souq!
+            </p>
+
+            <p style='color:#6b7280;font-size:14px;
+                      margin:0 0 32px 0;line-height:1.6'>
+                Please click the button below to verify
+                your email address and activate your account.
+                This link expires in 24 hours.
+            </p>
+
+            <a href='{verificationUrl}'
+               style='background:#0284c7;color:#ffffff;
+                      padding:14px 48px;border-radius:12px;
+                      text-decoration:none;font-weight:bold;
+                      font-size:15px;display:inline-block;
+                      margin-bottom:24px'>
+                Verify my email
+            </a>
+
+            <p style='color:#9ca3af;font-size:12px;
+                      margin:0;line-height:1.6'>
+                If you didn't create an account on Souq,
+                you can safely ignore this email.
+            </p>
+
+            <!-- Fallback link -->
+            <div style='margin-top:24px;padding:16px;
+                        background:#f9fafb;border-radius:8px'>
+                <p style='color:#6b7280;font-size:11px;margin:0 0 8px 0'>
+                    Button not working? Copy and paste this link:
+                </p>
+                <p style='color:#0284c7;font-size:11px;
+                          margin:0;word-break:break-all'>
+                    {verificationUrl}
+                </p>
+            </div>
+        </td>
+    </tr>
+
+    <!-- Footer -->
+    <tr>
+        <td style='background:#f9fafb;padding:24px;
+                   text-align:center;border-top:1px solid #e5e7eb'>
+            <p style='color:#9ca3af;font-size:12px;margin:0'>
+                © 2025 Souq Marketplace · All rights reserved
+            </p>
+        </td>
+    </tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>";
+        }
+
+        private string BuildPasswordResetEmail(
+            string firstName, string resetUrl)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<body style='margin:0;padding:0;background:#f9fafb;
+             font-family:Arial,sans-serif'>
+<table width='100%' cellpadding='0' cellspacing='0'>
+<tr><td align='center' style='padding:40px 20px'>
+<table width='600' cellpadding='0' cellspacing='0'
+       style='background:#ffffff;border-radius:16px;
+              overflow:hidden;border:1px solid #e5e7eb'>
+
+    <tr>
+        <td style='background:#0284c7;padding:32px;text-align:center'>
+            <h1 style='color:#ffffff;margin:0;font-size:24px'>Souq.</h1>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='padding:40px 32px;text-align:center'>
+            <h2 style='color:#111827;font-size:22px;margin:0 0 12px 0'>
+                Reset your password
+            </h2>
+
+            <p style='color:#6b7280;font-size:14px;
+                      margin:0 0 8px 0;line-height:1.6'>
+                Hi {firstName},
+            </p>
+
+            <p style='color:#6b7280;font-size:14px;
+                      margin:0 0 32px 0;line-height:1.6'>
+                We received a request to reset your password.
+                Click the button below to choose a new one.
+                This link expires in 1 hour.
+            </p>
+
+            <a href='{resetUrl}'
+               style='background:#0284c7;color:#ffffff;
+                      padding:14px 48px;border-radius:12px;
+                      text-decoration:none;font-weight:bold;
+                      font-size:15px;display:inline-block;
+                      margin-bottom:24px'>
+                Reset password
+            </a>
+
+            <p style='color:#9ca3af;font-size:12px;
+                      margin:0;line-height:1.6'>
+                If you didn't request this, you can safely
+                ignore this email. Your password won't change.
+            </p>
+        </td>
+    </tr>
+
+    <tr>
+        <td style='background:#f9fafb;padding:24px;
+                   text-align:center;border-top:1px solid #e5e7eb'>
+            <p style='color:#9ca3af;font-size:12px;margin:0'>
+                © 2025 Souq Marketplace · All rights reserved
+            </p>
+        </td>
+    </tr>
+</table>
+</td></tr>
+</table>
+</body>
+</html>";
+        }
+
 
     }
 }

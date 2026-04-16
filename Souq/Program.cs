@@ -23,7 +23,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = true;
     options.Password.RequireLowercase = true;
-    options.SignIn.RequireConfirmedAccount = false;
+    options.SignIn.RequireConfirmedAccount = true;
+    options.SignIn.RequireConfirmedEmail = true;
 })
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders()
@@ -109,6 +110,7 @@ using(var scope = app.Services.CreateScope())
             Email = adminEmail,
             FirstName = "Admin",
             LastName = "Souq",
+            EmailConfirmed = true,
             CreatedAt = DateTime.UtcNow
         };
         var result = await userManager.CreateAsync(adminUser, "Admin@123456");
@@ -221,6 +223,7 @@ using(var scope = app.Services.CreateScope())
                 LastName = "Vendor",
                 UserName = vendorEmail,
                 Email = vendorEmail,
+                EmailConfirmed = true,
                 CreatedAt = DateTime.UtcNow
             };
             var vendorResult = await userManager.CreateAsync(vendorUser, "Vendor@12345");
@@ -565,6 +568,28 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
+app.MapControllerRoute(
+    name: "confirmEmail",
+    pattern: "account/confirm-email",
+    defaults: new { controller = "Account", action = "ConfirmEmail" });
+
+app.MapControllerRoute(
+    name: "forgotPassword",
+    pattern: "account/forgot-password",
+    defaults: new
+    {
+        controller = "Account",
+        action = "ForgotPassword"
+    });
+
+app.MapControllerRoute(
+    name: "resetPassword",
+    pattern: "account/reset-password",
+    defaults: new
+    {
+        controller = "Account",
+        action = "ResetPassword"
+    });
 app.MapControllerRoute(
     name: "store",
     pattern: "store/{slug}",

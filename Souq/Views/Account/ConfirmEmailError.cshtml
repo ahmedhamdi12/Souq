@@ -1,0 +1,57 @@
+﻿@{
+    Layout = null;
+    ViewData["Title"] = "Verification Failed";
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Souq</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-primary-50 via-white
+             to-blue-50 flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md text-center">
+        <div class="bg-white rounded-2xl shadow-xl border border-gray-100 p-10">
+            <div class="w-16 h-16 bg-red-100 rounded-full flex items-center
+                    justify-center mx-auto mb-5">
+                <svg class="w-8 h-8 text-red-500" fill="none"
+                     stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                          stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-3">
+                Verification failed
+            </h1>
+            <p class="text-gray-500 text-sm mb-6">
+                This verification link is invalid or has expired.
+                Please register again to get a new link.
+            </p>
+            <div class="flex gap-3 justify-center">
+                <a href="/account/register"
+                   class="inline-flex items-center bg-blue-600
+                      hover:bg-blue-700 text-white font-semibold
+                      px-6 py-2.5 rounded-xl transition-all text-sm">
+                    Register again
+                </a>
+                <a href="/account/login"
+                   class="inline-flex items-center bg-white border
+                      border-gray-200 text-gray-700 hover:bg-gray-50
+                      font-semibold px-6 py-2.5 rounded-xl
+                      transition-all text-sm">
+                    Sign in
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

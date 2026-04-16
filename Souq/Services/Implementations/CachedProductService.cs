@@ -23,6 +23,12 @@ namespace Souq.Services.Implementations
             _cache = cache;
         }
 
+        public Task<bool> AddReviewAsync(ReviewViewModel model, string userId)
+        => _inner.AddReviewAsync(model, userId);
+
+        public Task<bool> CanUserReviewAsync(int productId, string userId)
+        => _inner.CanUserReviewAsync(productId, userId);
+
         public async Task<List<Department>> GetAllDepartmentsAsync()
         {
             const string cacheKey = "departments_all";

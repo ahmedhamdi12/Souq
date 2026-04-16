@@ -24,5 +24,13 @@
 
         Task SendVendorRejectedAsync(string toEmail,
                                      string storeName);
+
+        Task SendEmailVerificationAsync(string toEmail,
+                                 string firstName,
+                                 string verificationUrl);
+
+        Task SendPasswordResetAsync(string toEmail,
+                                     string firstName,
+                                     string resetUrl);
     }
 }
