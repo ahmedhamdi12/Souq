@@ -121,6 +121,7 @@ namespace Souq.Controllers
         // POST: /products/review
         [HttpPost]
         [Authorize]
+        [Route("products/review")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddReview(ReviewViewModel model)
         {

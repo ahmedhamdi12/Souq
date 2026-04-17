@@ -20,6 +20,7 @@ namespace Souq.Repositories.Implemntations
             return await _dbSet
                 .Where(o => o.UserId == userId)
                 .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Variation)
                 .OrderByDescending(o => o.CreatedAt)
                 .ToListAsync();
         }
