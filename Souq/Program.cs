@@ -7,6 +7,7 @@ using Souq.Repositories.Implemntations;
 using Souq.UnitOfWork;
 using Souq.Services.Interfaces;
 using Souq.Services.Implementations;
+using AspNetCoreRateLimit;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -58,6 +59,7 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IVendorService, VendorService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IImageService, CloudinaryImageService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 // Add services to the container.
 
@@ -84,6 +86,42 @@ builder.Services.AddResponseCompression(options =>
 {
     options.EnableForHttps = true;
 });
+builder.Services.Configure<IpRateLimitOptions>(options =>
+{
+    options.EnableEndpointRateLimiting = true;
+    options.StackBlockedRequests = false;
+    options.HttpStatusCode = 429;
+    options.RealIpHeader = "X-Real-IP";
+    options.GeneralRules = new List<RateLimitRule>
+    {
+        new RateLimitRule
+        {
+            Endpoint = "POST:/account/register",
+            Period   = "1h",
+            Limit    = 10   // max 10 registrations per hour per IP
+        },
+        new RateLimitRule
+        {
+            Endpoint = "POST:/account/login",
+            Period   = "15m",
+            Limit    = 20   // max 20 login attempts per 15 minutes
+        },
+        new RateLimitRule
+        {
+            Endpoint = "POST:/cart/add",
+            Period   = "1m",
+            Limit    = 60   // max 60 add to cart per minute
+        },
+        new RateLimitRule
+        {
+            Endpoint = "*",
+            Period   = "1s",
+            Limit    = 10   // global: max 10 requests per second
+        }
+    };
+});
+builder.Services.AddInMemoryRateLimiting();
+builder.Services.AddSingleton<IRateLimitConfiguration, RateLimitConfiguration>();   
 var app = builder.Build();
 
 using(var scope = app.Services.CreateScope())
@@ -563,6 +601,7 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseResponseCompression();
 app.UseCookiePolicy();
+app.UseIpRateLimiting();
 app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();

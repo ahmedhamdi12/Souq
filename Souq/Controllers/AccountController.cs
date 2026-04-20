@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Souq.Models;
+using Souq.Services.Implementations;
 using Souq.Services.Interfaces;
 using Souq.UnitOfWork;
 using Souq.ViewModels.Auth;
@@ -43,8 +44,8 @@ namespace Souq.Controllers
             {
                 UserName = model.Email,
                 Email = model.Email,
-                FirstName = model.FirstName,
-                LastName = model.LastName,
+                FirstName = InputSanitizer.Sanitize(model.FirstName),
+                LastName = InputSanitizer.Sanitize(model.LastName),
                 CreatedAt = DateTime.UtcNow
             };
             var result = await _userManager.CreateAsync(user, model.Password);

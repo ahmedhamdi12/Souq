@@ -12,10 +12,12 @@ namespace Souq.Services.Implementations
     public class VendorService : IVendorService
     {
         private readonly IUnitOfWork _uow;
+        private readonly IImageService _imageService;
 
-        public VendorService(IUnitOfWork uow)
+        public VendorService(IUnitOfWork uow, IImageService imageService)
         {
             _uow = uow;
+            _imageService = imageService;
         }
 
         
@@ -154,7 +156,7 @@ namespace Souq.Services.Implementations
             }).ToList();
         }
 
-        public async Task<bool> SaveProductsAsync(ProductFormViewModel model, int vendorId, IWebHostEnvironment env)
+        public async Task<bool> SaveProductsAsync(ProductFormViewModel model, int vendorId)
         {
             /*
                 Generate slug from product name.
@@ -163,7 +165,7 @@ namespace Souq.Services.Implementations
             */
             var slug = GenerateSlug(model.Name);
 
-            var uploadedImagesUrl = await SaveImagesAsync(model.NewImages,vendorId,env);
+            var uploadedImagesUrl = await SaveImagesAsync(model.NewImages,vendorId);
 
             if (model.IsEdit)
             {
@@ -239,15 +241,15 @@ namespace Souq.Services.Implementations
             {
                 VendorId = vendorId,
                 CategoryId = model.CategoryId,
-                Name = model.Name,
+                Name = InputSanitizer.Sanitize(model.Name),
                 Slug = slug,
-                Description = model.Description,
+                Description = InputSanitizer.Sanitize(model.Description),
                 BasePrice = model.BasePrice,
                 HasVariations = model.HasVariations,
                 IsApproved = false,  // needs admin approval
                 IsActive = true,
-                MetaTitle = model.MetaTitle,
-                MetaDescription = model.MetaDescription,
+                MetaTitle = InputSanitizer.SanitizeNullable(model.MetaTitle),
+                MetaDescription = InputSanitizer.SanitizeNullable(model.MetaDescription),
                 CreatedAt = DateTime.UtcNow,
                 Variations = variations,
                 Images = imageUrls.Select((url, idx) =>
@@ -277,14 +279,14 @@ namespace Souq.Services.Implementations
             if (product == null || product.VendorId != vendorId)
                 return false;
 
-            product.Name = model.Name;
+            product.Name = InputSanitizer.Sanitize(model.Name);
             product.Slug = slug;
-            product.Description = model.Description;
+            product.Description = InputSanitizer.Sanitize(model.Description);
             product.CategoryId = model.CategoryId;
             product.BasePrice = model.BasePrice;
             product.HasVariations = model.HasVariations;
-            product.MetaTitle = model.MetaTitle;
-            product.MetaDescription = model.MetaDescription;
+            product.MetaTitle = InputSanitizer.SanitizeNullable(model.MetaTitle);
+            product.MetaDescription = InputSanitizer.SanitizeNullable(model.MetaDescription);
 
             // Update variations
             var variations = ParseVariations(model.VariationsJson);
@@ -401,38 +403,19 @@ namespace Souq.Services.Implementations
         private async Task<List<string>> SaveImagesAsync(
             List<IFormFile>? files,
             int vendorId,
-            IWebHostEnvironment env)
+            IWebHostEnvironment? env = null)
         {
             var urls = new List<string>();
             if (files == null || !files.Any()) return urls;
 
-            /*
-                Save to wwwroot/images/products/{vendorId}/
-                Generate a unique filename using GUID.
-                Return the relative URL path.
-            */
-            var folderPath = Path.Combine(
-                env.WebRootPath, "images", "products",
-                vendorId.ToString());
-
-            Directory.CreateDirectory(folderPath);
+            
 
             foreach (var file in files)
             {
-                if (file.Length == 0) continue;
+                var url = await _imageService
+                                .UploadAsync(file, $"products/{vendorId}");
 
-                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".webp" };
-                var extension = Path.GetExtension(file.FileName).ToLower();
-
-                if (!allowedExtensions.Contains(extension)) continue;
-
-                var fileName = $"{Guid.NewGuid()}{extension}";
-                var filePath = Path.Combine(folderPath, fileName);
-
-                using var stream = new FileStream(filePath, FileMode.Create);
-                await file.CopyToAsync(stream);
-
-                urls.Add($"/images/products/{vendorId}/{fileName}");
+                if (url != null) urls.Add(url);
             }
 
             return urls;

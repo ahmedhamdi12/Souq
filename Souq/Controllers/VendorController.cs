@@ -14,14 +14,14 @@ namespace Souq.Controllers
         private readonly IOrderService _orderService;
         private readonly IVendorService _vendorService;
         private readonly IUnitOfWork _uow;
-        private readonly IWebHostEnvironment _env;
+        
 
-        public VendorController(IOrderService orderService, IVendorService vendorService, IUnitOfWork uow, IWebHostEnvironment env)
+        public VendorController(IOrderService orderService, IVendorService vendorService, IUnitOfWork uow)
         {
             _orderService = orderService;
             _vendorService = vendorService;
             _uow = uow;
-            _env = env;
+            
         }
 
         // get vendor profile 
@@ -81,7 +81,7 @@ namespace Souq.Controllers
                 model.Categories = refreshed.Categories;
                 return View("ProductForm", model);
             }
-            var success = await _vendorService.SaveProductsAsync(model, vendorId, _env);
+            var success = await _vendorService.SaveProductsAsync(model, vendorId);
 
             if (!success) 
             { 
