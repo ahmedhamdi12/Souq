@@ -432,20 +432,23 @@ namespace Souq.Services.Implementations
             var existing = await _uow.Vendors.GetByUserIdAsync(userId);
             if (existing != null) return false;
 
-            var slug = model.StoreName.ToLower()
-            .Replace(" ", "-")
-            .Replace("'", "")
-            .Replace("\"", "")
-            .Replace(".", "")
-            .Replace(",", "")
-            + "-" + Guid.NewGuid().ToString("N")[..6];
+            var slug = GenerateSlug(model.StoreName);
+            ;
+
+            string? logoUrl = null;
+            if (model.LogoFile != null)
+            {
+                logoUrl = await _imageService
+                    .UploadAsync(model.LogoFile, "vendor-logos");
+            }
 
             var vendorProfile = new VendorProfile
             {
                 UserId = userId,
-                StoreName = model.StoreName,
+                StoreName = InputSanitizer.Sanitize(model.StoreName),
                 StoreSlug = slug,
-                Description = model.Description,
+                Description = InputSanitizer.Sanitize( model.Description),
+                LogoUrl = logoUrl,
                 Status = Souq.Models.Enums.VendorStatus.Pending,
                 CreatedAt = DateTime.UtcNow
             };

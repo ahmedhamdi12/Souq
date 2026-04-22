@@ -19,5 +19,7 @@ namespace Souq.ViewModels.Vendor
         [Phone(ErrorMessage = "Please enter a valid phone number")]
         [Display(Name = "Business Phone")]
         public string? Phone { get; set; }
+
+        public IFormFile? LogoFile { get; set; }
     }
 }
